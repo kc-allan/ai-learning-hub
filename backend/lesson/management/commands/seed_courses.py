@@ -68,28 +68,28 @@ class Command(BaseCommand):
                 'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
             },
             {
-                'course': course_objects[1],
+                'course': course_objects[0],
                 'title': 'AI Algorithms',
                 'description': 'Learn various algorithms used in AI.',
                 'content': 'Algorithms in AI are critical for decision making...',
                 'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
             },
             {
-                'course': course_objects[2],
+                'course': course_objects[0],
                 'title': 'Machine Learning Foundations',
                 'description': 'Explore the foundational aspects of machine learning.',
                 'content': 'Machine learning is a subset of AI that allows systems to learn from data...',
                 'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
             },
             {
-                'course': course_objects[3],
+                'course': course_objects[1],
                 'title': 'Deep Learning Techniques',
                 'description': 'Deep dive into neural networks and learning techniques.',
                 'content': 'Deep learning allows AI to simulate the neural networks of the human brain...',
                 'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
             },
             {
-                'course': course_objects[4],
+                'course': course_objects[1],
                 'title': 'Ethics in AI',
                 'description': 'Understanding the impact of AI on society and ethics.',
                 'content': 'Ethical considerations are vital in the development and deployment of AI systems...',
@@ -112,18 +112,6 @@ class Command(BaseCommand):
                 'module': Module.objects.get(title='AI Algorithms'),
                 'title': 'Algorithms Quiz'
             },
-            {
-                'module': Module.objects.get(title='Machine Learning Foundations'),
-                'title': 'ML Foundations Quiz'
-            },
-            {
-                'module': Module.objects.get(title='Deep Learning Techniques'),
-                'title': 'Deep Learning Quiz'
-            },
-            {
-                'module': Module.objects.get(title='Ethics in AI'),
-                'title': 'AI Ethics Quiz'
-            },
         ]
         quiz_objects = []
         for quiz_data in quizzes:
@@ -137,19 +125,19 @@ class Command(BaseCommand):
                 'text': 'What is Artificial Intelligence?'
             },
             {
-                'quiz': quiz_objects[1],
+                'quiz': quiz_objects[0],
                 'text': 'Which algorithm is commonly used in AI?'
             },
             {
-                'quiz': quiz_objects[2],
+                'quiz': quiz_objects[0],
                 'text': 'What is supervised learning in ML?'
             },
             {
-                'quiz': quiz_objects[3],
+                'quiz': quiz_objects[0],
                 'text': 'What is a neural network?'
             },
             {
-                'quiz': quiz_objects[4],
+                'quiz': quiz_objects[0],
                 'text': 'What are ethical concerns in AI development?'
             },
         ]
@@ -162,6 +150,7 @@ class Command(BaseCommand):
 
         # Seed Answer Options for each Question
         answer_options_data = [
+            # For Question: 'What is Artificial Intelligence?'
             {
                 'question': question_objects[0],
                 'text': 'A machine that mimics human behavior.',
@@ -177,12 +166,76 @@ class Command(BaseCommand):
                 'text': 'A programming language for AI.',
                 'is_correct': False
             },
+
+            # For Question: 'Which algorithm is commonly used in AI?'
             {
-                'question': question_objects[0],
-                'text': 'None of the above.',
+                'question': question_objects[1],
+                'text': 'Linear Regression',
+                'is_correct': True
+            },
+            {
+                'question': question_objects[1],
+                'text': 'Dijkstra\'s Algorithm',
+                'is_correct': False
+            },
+            {
+                'question': question_objects[1],
+                'text': 'Binary Search',
+                'is_correct': False
+            },
+
+            # For Question: 'What is supervised learning in ML?'
+            {
+                'question': question_objects[2],
+                'text': 'Learning with labeled data to predict outcomes.',
+                'is_correct': True
+            },
+            {
+                'question': question_objects[2],
+                'text': 'Learning without any labeled data.',
+                'is_correct': False
+            },
+            {
+                'question': question_objects[2],
+                'text': 'Learning from trial and error.',
+                'is_correct': False
+            },
+
+            # For Question: 'What is a neural network?'
+            {
+                'question': question_objects[3],
+                'text': 'A system that mimics the brain\'s neural architecture.',
+                'is_correct': True
+            },
+            {
+                'question': question_objects[3],
+                'text': 'A machine that computes numbers.',
+                'is_correct': False
+            },
+            {
+                'question': question_objects[3],
+                'text': 'A type of unsupervised learning algorithm.',
+                'is_correct': False
+            },
+
+            # For Question: 'What are ethical concerns in AI development?'
+            {
+                'question': question_objects[4],
+                'text': 'Bias in decision-making processes.',
+                'is_correct': True
+            },
+            {
+                'question': question_objects[4],
+                'text': 'Increased job opportunities for workers.',
+                'is_correct': False
+            },
+            {
+                'question': question_objects[4],
+                'text': 'Decreased human dependency on technology.',
                 'is_correct': False
             },
         ]
+
         for answer_option_data in answer_options_data:
             AnswerOption.objects.create(**answer_option_data)
 
@@ -205,17 +258,7 @@ class Command(BaseCommand):
                 'title': 'ML Foundations Assignment',
                 'module': Module.objects.get(title='Machine Learning Foundations'),
                 'text': 'Discuss the different types of machine learning models.'
-            },
-            {
-                'title': 'Deep Learning Assignment',
-                'module': Module.objects.get(title='Deep Learning Techniques'),
-                'text': 'Explain the architecture of a neural network.'
-            },
-            {
-                'title': 'Ethics in AI Assignment',
-                'module': Module.objects.get(title='Ethics in AI'),
-                'text': 'Discuss the ethical implications of AI in society.'
-            },
+            }
         ]
         for assignment_data in assignments_data:
             Assignment.objects.create(**assignment_data)

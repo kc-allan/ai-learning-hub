@@ -1,7 +1,9 @@
 from django.urls import path
-from .user_view import login_user, register_user
+from .course_view import list_courses, course_detail, list_quiz_questions
 
 urlpatterns = [
-    path('register/', register_user, name="register"),
-    path('login/', login_user, name="login"),
+    path('courses/', list_courses, name="courses"),
+    path('course/<str:pk>/', course_detail, name="course_detail"),
+    path('quizzes/<str:quiz_id>/questions/', list_quiz_questions, name='quiz-questions-list'),
+    
 ]
