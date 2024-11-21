@@ -1,6 +1,9 @@
 from pathlib import Path
 import os
 from datetime import timedelta
+from decouple import config
+import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -14,7 +17,7 @@ SECRET_KEY = 'django-insecure-=xsc0p)$#q6ajjwx_0dtk4u2q%psz)#y2w6)u+ai@vy$kfw2g$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -73,12 +76,20 @@ WSGI_APPLICATION = 'ai_hub.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if config('ENV') == 'development':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
+else:
+    DATABASES = {
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 AUTH_USER_MODEL = 'lesson.CustomUser'
 
