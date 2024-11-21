@@ -7,7 +7,10 @@ from rest_framework.permissions import AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers
 from .models import CustomUser
-
+from rest_framework.permissions import IsAuthenticated
+from .serializers import UserCourseProgressSerializer, UserSerializer
+from .models import UserCourseProgress
+from drf_yasg import openapi
 
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -56,5 +59,39 @@ class CustomUserLoginView(APIView):
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UserProgress(generics.ListAPIView):
+    """User progress"""
+    serializer_class = UserCourseProgressSerializer
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['User'],
+        operation_description="Retrieve a list of user courses and progress",
+        responses={200: openapi.Response('retrieved successfully', UserCourseProgressSerializer(many=True))},
+        operation_summary="List user courses progress"
+    )
+    def get(self, request):
+        user = request.user
+        user_courses = UserCourseProgress.objects.filter(user=user)
+        serialized_data = UserCourseProgressSerializer(user_courses, many=True)
+        return Response(serialized_data.data)
+
+class UserInfo(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['User'],
+        operation_description="Get logged in user info",
+        responses={200: openapi.Response('retrieved successfully', UserSerializer)},
+        operation_summary="List user details"
+    )
+    def get(self, request):
+        user = request.user
+        serialized_data = UserSerializer(user)
+        return Response(serialized_data.data)
+
+user_info = UserInfo.as_view()
 register_user = CustomUserRegistrationView.as_view()
 login_user = CustomUserLoginView.as_view()
+user_course_progress  = UserProgress.as_view()

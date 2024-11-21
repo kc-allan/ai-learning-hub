@@ -18,7 +18,7 @@ class CourseDetailView(generics.GenericAPIView, mixins.RetrieveModelMixin):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
-        tags=['courses'],
+        tags=['Courses'],
         operation_description="Retrieve detailed information about a course, including its modules.",
         responses={200: openapi.Response('Course details retrieved successfully', CourseSerializer)},
         operation_summary="Get course details and modules"
@@ -47,7 +47,7 @@ class ListCourses(generics.GenericAPIView, mixins.ListModelMixin):
     ordering_fields = ['title', 'created_at']
 
     @swagger_auto_schema(
-        tags=['courses'],
+        tags=['Courses'],
         operation_description="Retrieve a list of courses with optional filters for premium/non-premium.",
         responses={200: openapi.Response('List of courses retrieved successfully', CourseSerializer(many=True))},
         operation_summary="List available courses"
@@ -76,8 +76,9 @@ class QuizQuestionsListAPIView(generics.ListAPIView):
                 openapi.IN_PATH,
                 description="UUID of the quiz",
                 type=openapi.TYPE_STRING,
-                required=True
+                required=True,
             )
+
         ],
         responses={
             200: openapi.Response(

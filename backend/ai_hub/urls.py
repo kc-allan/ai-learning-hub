@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/v1/docs', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/v1/auth/register', register_user),
     path('api/v1/auth/login', login_user),
+    path('api/v1/community/', include('forums.urls')),
     path('api/v1/', include('lesson.urls')),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
