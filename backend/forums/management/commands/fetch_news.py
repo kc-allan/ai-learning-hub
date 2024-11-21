@@ -51,7 +51,7 @@ class Command(BaseCommand):
         self.clean_outdated_news()
 
     def clean_outdated_news(self):
-        retention_period = 7  #retain news if published 7 days ago
+        retention_period = 20  #retain news if published 7 days ago
         threshold_date = datetime.now() - timedelta(days=retention_period)
         deleted_count, _ = NewsArticle.objects.filter(
             published_at__lt=threshold_date
