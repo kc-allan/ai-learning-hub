@@ -16,7 +16,7 @@ class Command(BaseCommand):
         response = requests.get(NEWS_API_URL, params={
             "q": QUERY,
             "apiKey": API_KEY,
-            "pageSize": 15,  # Fetch up to 15 latest articles
+            "pageSize": 40,  # Fetch up to 40 latest articles
         })
 
         if response.status_code == 200:
@@ -51,7 +51,7 @@ class Command(BaseCommand):
         self.clean_outdated_news()
 
     def clean_outdated_news(self):
-        retention_period = 15  # Days to retain news
+        retention_period = 7  #retain news if published 7 days ago
         threshold_date = datetime.now() - timedelta(days=retention_period)
         deleted_count, _ = NewsArticle.objects.filter(
             published_at__lt=threshold_date
