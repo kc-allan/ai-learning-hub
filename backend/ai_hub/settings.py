@@ -76,21 +76,22 @@ WSGI_APPLICATION = 'ai_hub.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-if config('ENV') == 'development':
+if config('ENV') == 'production':
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-else:
-    DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+    
 AUTH_USER_MODEL = 'lesson.CustomUser'
 
 # Password validation
@@ -164,3 +165,7 @@ CORS_ALLOWED_ORIGINS = [
    'http://localhost:5173',
    'http://127.0.0.1:5173',
 ]
+
+## ----STRIPE INTEGRATION --------
+STRIPE_SECRET_KEY=config('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY=config('STRIPE_PUBLISHABLE_KEY')

@@ -9,6 +9,8 @@ from .models import Forum, ForumThread, ForumReply
 from .serializers import ForumSerializer, ForumThreadSerializer, ForumReplySerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
+from .permissions import IsPremiumUser
+
 
 class ForumListView(generics.ListAPIView):
     permission_classes = [AllowAny]
@@ -24,7 +26,7 @@ class ForumListView(generics.ListAPIView):
         return self.list(request, *args, **kwargs)
 
 class ForumThreadListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsPremiumUser]
     @swagger_auto_schema(
         tags=['Forum'],
         operation_summary="List Forum Threads",
@@ -52,7 +54,7 @@ class ForumThreadListCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ForumReplyListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsPremiumUser]
 
     @swagger_auto_schema(
         tags=['Forum'],
@@ -82,7 +84,7 @@ class ForumReplyListCreateView(APIView):
 
 
 class ForumReplyDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsPremiumUser]
 
     @swagger_auto_schema(
         tags=['Forum'],

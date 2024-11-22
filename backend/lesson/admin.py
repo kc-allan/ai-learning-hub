@@ -14,6 +14,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'is_premium', 'premium_expiry')
     list_filter = ('is_premium',)
     search_fields = ('username', 'email')
+    readonly_fields = ['is_premium']
 
 # Course admin
 @admin.register(Course)
@@ -49,6 +50,7 @@ class AnswerOptionAdmin(admin.ModelAdmin):
     list_display = ('text', 'is_correct', 'question')
     search_fields = ('text',)
     list_filter = ('is_correct', 'question')
+    readonly_fields=['is_correct']
 
 # UserCourseProgress admin
 @admin.register(UserCourseProgress)
@@ -56,6 +58,7 @@ class UserCourseProgressAdmin(admin.ModelAdmin):
     list_display = ('user', 'course', 'percent_complete', 'is_completed')
     list_filter = ('is_completed', 'course')
     search_fields = ('user__username', 'course__title')
+    readonly_fields=['is_completed', 'percent_complete']
 
 # UserModuleProgress admin
 @admin.register(UserModuleProgress)
@@ -63,6 +66,7 @@ class UserModuleProgressAdmin(admin.ModelAdmin):
     list_display = ('user', 'module', 'is_completed', 'quiz_score')
     list_filter = ('is_completed', 'module')
     search_fields = ('user__username', 'module__title')
+    readonly_fields = ['is_completed', 'quiz_score']
 
 # UserQuizAttempt admin
 @admin.register(UserQuizAttempt)
@@ -70,14 +74,14 @@ class UserQuizAttemptAdmin(admin.ModelAdmin):
     list_display = ('user', 'quiz', 'total_score', 'passed', 'attempted_at')
     list_filter = ('passed', 'quiz')
     search_fields = ('user__username', 'quiz__title')
-
+    readonly_fields =['passed', 'total_score']
 # UserQuizResponse admin
 @admin.register(UserQuizResponse)
 class UserQuizResponseAdmin(admin.ModelAdmin):
     list_display = ('attempt', 'question', 'is_correct')
     list_filter = ('is_correct', 'question')
     search_fields = ('attempt__user__username', 'question__text')
-
+    readonly_fields =['is_correct']
 # Assignment admin
 @admin.register(Assignment)
 class AssignmentAdmin(admin.ModelAdmin):

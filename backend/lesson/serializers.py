@@ -24,9 +24,13 @@ class QuizSerializer(serializers.ModelSerializer):
         fields = ['id', 'module', 'title']
 
 class CourseSerializer(serializers.ModelSerializer):
+    total_modules = serializers.SerializerMethodField()
     class Meta:
         model = Course
-        fields = "__all__"
+        fields = ['id', 'title', 'total_modules', 'thumbnail', 'description', 'is_premium']
+    
+    def get_total_modules(self, obj):
+        return obj.modules.count()
 
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
