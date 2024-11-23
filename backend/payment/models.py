@@ -6,6 +6,7 @@ from lesson.models import CustomUser
 class PaymentPlans(models.Model):
     """plans that are avilable"""
     DURATION_CHOICES = (
+        ('weekly', 'weekly'),
         ('annualy', 'annualy'),
         ('monthly', 'monthly'),
     )
