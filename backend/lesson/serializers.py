@@ -27,7 +27,7 @@ class CourseSerializer(serializers.ModelSerializer):
     total_modules = serializers.SerializerMethodField()
     class Meta:
         model = Course
-        fields = ['id', 'title', 'total_modules', 'thumbnail', 'description', 'is_premium']
+        fields = ['id', 'title', 'total_modules', 'thumbnail', 'description', 'is_premium', 'level']
     
     def get_total_modules(self, obj):
         return obj.modules.count()
