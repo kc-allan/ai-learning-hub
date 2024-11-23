@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   BookOpen,
   Brain,
@@ -10,6 +11,8 @@ import {
   AlertCircle,
   Menu,
   X,
+  XCircle,
+  CheckCircle
 } from "lucide-react";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
@@ -18,13 +21,14 @@ const CourseDetailPage = () => {
   const { courseId } = useParams();
   const [courseData, setCourseData] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
-  const [activeSection, setActiveSection] = useState('video');
+  const [activeSection, setActiveSection] = useState("video");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [quizData, setQuizData] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [activeQuizId, setActiveQuizId] = useState(null);
+  const [ results, setResults ] = useState(null);
 
   useEffect(() => {
     const fetchCourseDetail = async () => {
@@ -127,14 +131,46 @@ const CourseDetailPage = () => {
   };
 
   const renderQuizContent = () => {
-    console.log(quizData);
+    let answers = {
+      answers: [],
+    };
+
+    Object.entries(selectedAnswers).forEach(([key, value]) => {
+      answers.answers.push({
+        "question_id": key,
+        "selected_option_id": value
+      })
+    });
     
+
     if (!quizData) return null;
 
     if (quizSubmitted) {
-      console.log(selectedAnswers);
+      const fetchScore = async (quizId) => {
+        try {
+          const response = await fetch(`/api/v1/quiz/${quidId}/submit`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(answers)
+          });
+          if (!response.ok) {
+            throw new Error("Failed to fecth Score");
+          }
+          const result = await response.json()
+          setResults(result);
+        } catch (error) {
+          console.log(error.message);
+          
+        }
+      };
+
       
-      const score = calculateScore();
+      console.log(results);
+      const score = 80
+      
       return (
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="text-center mb-6">
@@ -157,6 +193,7 @@ const CourseDetailPage = () => {
 
           <div className="space-y-6">
             {quizData.map((question, index) => {
+              question.correct_answer_id = question.id
               const isCorrect =
                 selectedAnswers[question.id] === question.correct_answer_id;
               return (
@@ -172,7 +209,7 @@ const CourseDetailPage = () => {
                     Question {index + 1}: {question.text}
                   </p>
                   <div className="space-y-2">
-                    {question.answers.map((answer) => (
+                    {question.question_options.map((answer) => (
                       <div
                         key={answer.id}
                         className={`flex items-center ${
@@ -224,9 +261,8 @@ const CourseDetailPage = () => {
       );
     }
 
-    
     const currentQuestion = quizData[currentQuestionIndex];
-    
+
     return (
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <div className="flex justify-between items-center mb-6">
@@ -234,10 +270,8 @@ const CourseDetailPage = () => {
             Question {currentQuestionIndex + 1} of {quizData.length}
           </h3>
           <div className="text-sm text-gray-600">
-            {Math.round(
-              (currentQuestionIndex / quizData.length) * 100
-            )}
-            % Complete
+            {Math.round((currentQuestionIndex / quizData.length) * 100)}%
+            Complete
           </div>
         </div>
 
@@ -246,9 +280,7 @@ const CourseDetailPage = () => {
             <div
               className="bg-blue-500 h-2 rounded-full transition-all duration-300"
               style={{
-                width: `${
-                  (currentQuestionIndex / quizData.length) * 100
-                }%`,
+                width: `${(currentQuestionIndex / quizData.length) * 100}%`,
               }}
             />
           </div>
@@ -286,10 +318,7 @@ const CourseDetailPage = () => {
           {currentQuestionIndex === quizData.length - 1 ? (
             <button
               onClick={() => setQuizSubmitted(true)}
-              disabled={
-                Object.keys(selectedAnswers).length !==
-                quizData.length
-              }
+              disabled={Object.keys(selectedAnswers).length !== quizData.length}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300"
             >
               Submit Quiz
