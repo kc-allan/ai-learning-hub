@@ -60,9 +60,12 @@ class UserCourseProgressSerializer(serializers.ModelSerializer):
         return obj.course.title
 
 class UserModuleProgressSerializer(serializers.ModelSerializer):
+    course = serializers.SerializerMethodField()
     class Meta:
         model = UserModuleProgress
-        fields = ['id', 'user', 'module', 'is_completed', 'quiz_score']
+        fields = ['id', 'user', 'course', 'module', 'is_completed', 'quiz_score']
+    def get_course(self, obj):
+        return obj.module.course
 
 class UserQuizAttemptSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source="user.username")
