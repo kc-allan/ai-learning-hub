@@ -78,13 +78,12 @@ class UserQuizAttemptSerializer(serializers.ModelSerializer):
         return UserQuizResponseSerializer(responses, many=True).data
 
 class UserQuizResponseSerializer(serializers.ModelSerializer):
-    question = serializers.CharField(source="question.text")
-    selected_option = serializers.CharField(source="selected_option.text")
+    question_id = serializers.CharField(source="question.id")
     is_correct = serializers.BooleanField()
 
     class Meta:
         model = UserQuizResponse
-        fields = ['question', 'selected_option', 'is_correct']
+        fields = ['question_id', 'is_correct']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
