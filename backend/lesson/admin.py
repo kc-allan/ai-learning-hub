@@ -50,7 +50,6 @@ class AnswerOptionAdmin(admin.ModelAdmin):
     list_display = ('text', 'is_correct', 'question')
     search_fields = ('text',)
     list_filter = ('is_correct', 'question')
-    readonly_fields=['is_correct']
 
 # UserCourseProgress admin
 @admin.register(UserCourseProgress)
