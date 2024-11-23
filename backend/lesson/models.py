@@ -49,7 +49,7 @@ class Quiz(models.Model):
 class Question(models.Model):
     id = UUID_field()
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="questions")
-    text = models.TextField()
+    text = models.TextField(blank=False)
 
     def __str__(self):
         return self.text
