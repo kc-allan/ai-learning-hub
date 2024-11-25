@@ -54,7 +54,7 @@ class UserCourseProgressSerializer(serializers.ModelSerializer):
     course_details = serializers.SerializerMethodField()
     class Meta:
         model = UserCourseProgress
-        fields = ['id', 'course_details', 'completed_modules', 'total_modules', 'percent_complete', 'is_completed', 'last_accessed']
+        fields = ['id', 'course_details', 'completed_modules', 'total_modules', 'percent_complete', 'is_completed', 'last_accessed', 'course']
 
     def get_course_details(self, obj):
         return obj.course.title

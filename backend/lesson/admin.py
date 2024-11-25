@@ -14,7 +14,6 @@ class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'is_premium', 'premium_expiry')
     list_filter = ('is_premium',)
     search_fields = ('username', 'email')
-    readonly_fields = ['is_premium']
 
 # Course admin
 @admin.register(Course)
