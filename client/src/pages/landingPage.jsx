@@ -82,30 +82,17 @@ const LandingPage = () => {
                 Powered by Intelligent Learning Paths
               </span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
               Transform your career with cutting-edge AI education. Personalized
               learning tracks, hands-on projects, and expert-led courses.
             </p>
 
-            <form
-              onSubmit={handleEmailSubmit}
-              className="max-w-xl mx-auto flex shadow-lg rounded-lg overflow-hidden"
+            <a
+              href="/auth/register"
+              className="px-8 py-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
             >
-              <input
-                type="email"
-                placeholder="Enter your email to start learning"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-grow px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-6 py-3 hover:bg-blue-600 transition-colors font-medium"
-              >
-                Start Free
-              </button>
-            </form>
+              Get Started
+            </a>
           </div>
         </section>
 
@@ -181,7 +168,7 @@ const LandingPage = () => {
           </div>
         </section>
       </main>
-	  <Footer />
+      <Footer />
     </div>
   );
 };

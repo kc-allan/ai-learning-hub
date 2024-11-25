@@ -13,6 +13,8 @@ import { UserPlus } from "lucide-react";
 
 const RegistrationPage = () => {
   const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
     username: "",
     email: "",
     password: "",
@@ -42,6 +44,8 @@ const RegistrationPage = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          first_name: formData.first_name,
+          last_name: formData.last_name,
           username: formData.username,
           email: formData.email,
           password: formData.password,
@@ -91,6 +95,28 @@ const RegistrationPage = () => {
                 Registration successful! Please log in.
               </Typography>
             )}
+            <div className="flex justify-between gap-4">
+            <TextField
+              id="first_name"
+              label="First Name"
+			  type="text"
+              value={formData.first_name}
+              onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+              fullWidth
+              required
+              disabled={loading}
+            />
+            <TextField
+              id="last_name"
+              label="Last Name"
+			  type="text"
+              value={formData.last_name}
+              onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+              fullWidth
+              required
+              disabled={loading}
+            />
+            </div>
             <TextField
               id="username"
               label="Username"

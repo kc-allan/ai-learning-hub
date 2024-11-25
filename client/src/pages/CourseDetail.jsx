@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   XCircle,
-  CheckCircle
+  CheckCircle,
+  Check,
 } from "lucide-react";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
@@ -28,7 +29,8 @@ const CourseDetailPage = () => {
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [activeQuizId, setActiveQuizId] = useState(null);
-  const [ results, setResults ] = useState(null);
+  const [results, setResults] = useState(null);
+  const token = useSelector((state) => state.token);
 
   useEffect(() => {
     const fetchCourseDetail = async () => {
@@ -90,7 +92,12 @@ const CourseDetailPage = () => {
               setIsSidebarOpen(false);
             }}
           >
-            <h3 className="font-semibold">{module.title}</h3>
+            <div className="flex justify-between">
+              <h3 className="font-semibold">{module.title}</h3>
+              {!module.is_completed && (
+                <CheckCircle className="w-5 h-5 text-green-500" />
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -137,46 +144,51 @@ const CourseDetailPage = () => {
 
     Object.entries(selectedAnswers).forEach(([key, value]) => {
       answers.answers.push({
-        "question_id": key,
-        "selected_option_id": value
-      })
+        question_id: key,
+        selected_option_id: value,
+      });
     });
-    
 
     if (!quizData) return null;
 
     if (quizSubmitted) {
       const fetchScore = async (quizId) => {
         try {
-          const response = await fetch(`/api/v1/quiz/${quidId}/submit`, {
+          const response = await fetch(`/api/v1/quiz/${quizId}/submit/`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(answers)
+            body: JSON.stringify(answers),
           });
+
           if (!response.ok) {
-            throw new Error("Failed to fecth Score");
+            throw new Error("Failed to fetch Score");
           }
-          const result = await response.json()
+
+          const result = await response.json();
           setResults(result);
         } catch (error) {
-          console.log(error.message);
-          
+          console.error(error.message);
         }
       };
 
-      
-      console.log(results);
-      const score = 80
-      
+      fetchScore(activeQuizId);
+
+      // Guard clause to handle null `results`
+      if (!results) {
+        return <div>Loading your quiz results...</div>;
+      }
+
+      const score = results.attempt?.total_score || 0;
+
       return (
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="text-center mb-6">
             <div
               className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${
-                score >= 70
+                Number(score) === quizData.length
                   ? "bg-green-100 text-green-600"
                   : "bg-red-100 text-red-600"
               }`}
@@ -193,9 +205,12 @@ const CourseDetailPage = () => {
 
           <div className="space-y-6">
             {quizData.map((question, index) => {
-              question.correct_answer_id = question.id
               const isCorrect =
-                selectedAnswers[question.id] === question.correct_answer_id;
+                selectedAnswers[question.id] ===
+                results.attempt.responses.find(
+                  (res) => res.question_id === question.id
+                )?.is_correct;
+
               return (
                 <div
                   key={question.id}

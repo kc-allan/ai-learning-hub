@@ -1,5 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import {format} from 'date-fns'
 import Header from '../../components/header'
 import { 
   Home, 
@@ -44,8 +46,37 @@ const recentCourses = [
 ]
 
 const Dashboard = () => {
+  const token = useSelector((state) => state.token)
   const user = useSelector((state) => state.user)
   const [activeTab, setActiveTab] = useState('overview')
+  const [userProgress, setUserProgress] = useState(null)
+  const navigate = useNavigate()
+
+  function toTitleCase(str) {
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1)) 
+  }
+
+  useEffect(() => {
+    const fetchUserProgress = async () => {
+      try {
+        const response = await fetch(`/api/v1/user/progress`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!response.ok) throw new Error("Failed to fetch user progress");
+        const data = await response.json();
+        setUserProgress(data);
+      } catch (error) {
+        console.error("Error fetching course details:", error);
+      }
+    };
+
+    fetchUserProgress();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -61,7 +92,7 @@ const Dashboard = () => {
                 className="w-16 h-16 rounded-full mr-4" 
               />
               <div>
-                <h2 className="text-xl font-bold">{user?.name || 'Learner'}</h2>
+                <h2 className="text-xl font-bold">{user?.first_name || user?.last_name ? toTitleCase(`${user?.first_name} ${user?.last_name}`) : user?.username || 'Learner'}</h2>
                 <p className="text-gray-500">AI & Machine Learning Track</p>
               </div>
             </div>
@@ -86,7 +117,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <BookOpen className="mx-auto text-green-500" />
-                <span className="text-sm">8 Cou</span>
+                <span className="text-sm">{userProgress?.length || 0} {userProgress?.length == 1 ? 'Course' : 'Courses' }</span>
               </div>
               <div>
                 <Activity className="mx-auto text-purple-500" />
@@ -98,7 +129,7 @@ const Dashboard = () => {
           {/* Learning Paths and Progress */}
           <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold">Learning Paths</h3>
+              <h3 className="text-xl font-bold">Enrolled Courses</h3>
               <Link 
                 to="/courses" 
                 className="text-blue-500 hover:underline"
@@ -108,25 +139,26 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-4">
-              {learningPaths.map(path => (
+              {userProgress?.map(course => (
                 <div 
-                  key={path.id} 
-                  className="flex items-center bg-gray-100 p-4 rounded-lg"
+                  key={course.id} 
+                  className="flex items-center bg-gray-100 p-4 rounded-lg cursor-pointer"
+                  onClick={() => navigate(`/course/${course.course}`)}
                 >
-                  {path.icon}
+                  {course.icon}
                   <div className="ml-4 flex-grow">
                     <div className="flex justify-between">
-                      <span className="font-semibold">{path.title}</span>
-                      <span>{path.progress}%</span>
+                      <span className="font-semibold">{course.course_details}</span>
+                      <span>{course.percent_complete}%</span>
                     </div>
                     <div className="w-full bg-gray-300 rounded-full h-2 mt-2">
                       <div 
                         className="bg-blue-500 h-2 rounded-full" 
-                        style={{ width: `${path.progress}%` }}
+                        style={{ width: `${course.percent_complete}%` }}
                       ></div>
                     </div>
                     <div className="text-sm text-gray-500 mt-1">
-                      {path.modules} Modules
+                      {course.total_modules} Modules
                     </div>
                   </div>
                 </div>
@@ -139,23 +171,23 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
           <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
             <h3 className="text-xl font-bold mb-4">Recent Courses</h3>
-            {recentCourses.map(course => (
+            {userProgress?.map(course => (
               <div 
                 key={course.id} 
                 className="flex justify-between items-center py-3 border-b"
               >
                 <div>
-                  <span className="font-semibold">{course.title}</span>
+                  <span className="font-semibold">{course.course_details}</span>
                   <div className="text-sm text-gray-500">
-                    Last accessed: {course.lastAccessed}
+                    Last accessed: {format(new Date(course.last_accessed), "dd-MMM-yyyy HH:mm")}
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <span className="mr-2">{course.progress}%</span>
+                  <span className="mr-2">{course.percent_complete}%</span>
                   <div className="w-20 bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-green-500 h-2 rounded-full" 
-                      style={{ width: `${course.progress}%` }}
+                      style={{ width: `${course.percent_complete}%` }}
                     ></div>
                   </div>
                 </div>
