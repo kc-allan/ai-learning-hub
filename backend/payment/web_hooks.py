@@ -2,20 +2,21 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
-from lesson.models import PaymentTransaction, StripeCustomers, PaymentPlans
+from .models import PaymentTransaction, StripeCustomers, PaymentPlans
 import stripe
 from django.conf import settings
 import json
 from datetime import datetime
+from decouple import config
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+stripe.api_key = config('STRIPE_SECRET_KEY')
 
 @method_decorator(csrf_exempt, name="dispatch")
 class StripeWebhookView(APIView):
     def post(self, request):
         payload = request.body
         sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
-        endpoint_secret = "your-webhook-signing-secret"
+        endpoint_secret = config('STRIPE_ENDPOINT_SECRET')
 
         try:
             event = stripe.Webhook.construct_event(
@@ -52,9 +53,9 @@ class StripeWebhookView(APIView):
         currency = payment_intent.get("currency")
 
         # Find the transaction in the database
-        transaction = PaymentTransaction.objects.filter(
+        transaction = PaymentTransaction.objects.get(
             stripe_transaction_id=stripe_transaction_id
-        ).first()
+        )
 
         if transaction:
             transaction.status = "success"
@@ -81,9 +82,9 @@ class StripeWebhookView(APIView):
         current_period_end = subscription.get("current_period_end")
 
         # Find the StripeCustomer in the database
-        stripe_customer = StripeCustomers.objects.filter(
+        stripe_customer = StripeCustomers.objects.get(
             stripe_customer_id=stripe_customer_id
-        ).first()
+        )
 
         if stripe_customer:
             stripe_customer.subscription_end = datetime.fromtimestamp(current_period_end)
@@ -95,9 +96,9 @@ class StripeWebhookView(APIView):
         stripe_customer_id = subscription.get("customer")
 
         # Find the StripeCustomer in the database
-        stripe_customer = StripeCustomers.objects.filter(
+        stripe_customer = StripeCustomers.objects.get(
             stripe_customer_id=stripe_customer_id
-        ).first()
+        )
 
         if stripe_customer:
             stripe_customer.status = "canceled"
