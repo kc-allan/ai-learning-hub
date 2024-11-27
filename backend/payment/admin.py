@@ -46,6 +46,18 @@ class PaymentPlansAdmin(admin.ModelAdmin):
                 raise ValueError(f"Error creating product or price in Stripe: {str(e)}")
 
         super().save_model(request, obj, form, change)
+    
+    def delete_model(self, request, obj):
+        if obj.stripe_product_id and obj.stripe_price_id:
+            try:
+                # Delete the price in Stripe
+                stripe.Price.delete(obj.stripe_price_id)
+                
+                # Delete the product in Stripe
+                stripe.Product.delete(obj.stripe_product_id)
+            except Exception as e:
+                raise ValueError(f"Error deleting product or price in Stripe: {str(e)}")
+        super().delete_model(request, obj)
 
 @admin.register(StripeCustomers)
 class StripeCustomersAdmin(admin.ModelAdmin):
