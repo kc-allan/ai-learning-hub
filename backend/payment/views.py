@@ -4,12 +4,13 @@ from rest_framework import status
 import stripe
 from datetime import datetime
 from .models import StripeCustomers, PaymentPlans
-from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from decouple import config
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+stripe.api_key = config('STRIPE_SECRET_KEY')
 
+print("stripe api: ", stripe.api_key)
 
 class CreatePaymentIntentView(APIView):
     """Pay for a course and create a customer if not already created"""
@@ -24,7 +25,7 @@ class CreatePaymentIntentView(APIView):
                 'plan_id': openapi.Schema(type=openapi.TYPE_STRING, description="The ID of the plan being purchased"),
                 'stripe_customer_id': openapi.Schema(type=openapi.TYPE_STRING, description="Existing Stripe customer ID (optional)")
             },
-            required=['amount', 'currency', 'email', 'plan_id']
+            required=['amount', 'email', 'plan_id']
         ),
         responses={
             200: openapi.Response('Payment Intent Created', openapi.Schema(
@@ -44,41 +45,57 @@ class CreatePaymentIntentView(APIView):
     )
     def post(self, request):
         try:
-            data = request.data
+            data = request.data         
             amount = int(data.get("amount", 0))
             currency = data.get("currency", "usd")
             email = data.get("email")
             plan_id = data.get('plan_id')
-            
-            stripe_customer_id = data.get("stripe_customer_id")
-            
-            if not stripe_customer_id:
-                customer = stripe.Customer.create(
-                    email=email
-                )
-                stripe_customer_id = customer.id  # Save the customer ID for later use
+            stripe_customer_id = data.get('stripe_customer_id', None)
 
-                # save in db
+            if not email or not amount or not plan_id:
+                return Response({"error": "Missing required fields: email, amount, or plan_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if amount <= 0:
+                return Response({"error": "Amount must be greater than 0"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+            if not stripe_customer_id:
+                customer = stripe.Customer.create(email="test@mail.com")
+                if not customer or not customer.id:
+                    raise ValueError("Failed to create Stripe customer")
+                stripe_customer_id = customer.id
+
+            try:
+                plan = PaymentPlans.objects.get(id=plan_id)
                 StripeCustomers.objects.create(
                     stripe_customer_id=stripe_customer_id,
-                    current_plan=plan_id,
+                    current_plan=plan,
                     status='active'
                 )
+            except Exception as db_error:
+                print("Database error:", db_error)
+                raise ValueError("Failed to save customer in the database")
 
-            payment_intent = stripe.PaymentIntent.create(
-                amount=amount,
-                currency=currency,
-                payment_method_types=["card"],
-                customer=stripe_customer_id
-            )
+            try:
+                payment_intent = stripe.PaymentIntent.create(
+                    amount=amount,
+                    currency=currency,
+                    payment_method_types=["card"],
+                    customer=stripe_customer_id
+                )
+            except Exception as stripe_error:
+                print("Stripe Payment Intent error:", stripe_error)
+                raise ValueError("Failed to create payment intent")
 
-            # Return the client secret for the frontend to handle the payment
             return Response({
                 "clientSecret": payment_intent['client_secret'],
                 "customerId": stripe_customer_id
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
+            import traceback
+            print("Exception occurred:", e)
+            traceback.print_exc()
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateSubscriptionView(APIView):

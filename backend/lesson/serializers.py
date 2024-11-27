@@ -50,6 +50,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
         model = Assignment
         fields = ['id', 'title', 'text']
 
+
 class UserCourseProgressSerializer(serializers.ModelSerializer):
     course_details = serializers.SerializerMethodField()
     class Meta:
@@ -57,7 +58,17 @@ class UserCourseProgressSerializer(serializers.ModelSerializer):
         fields = ['id', 'course_details', 'completed_modules', 'total_modules', 'percent_complete', 'is_completed', 'last_accessed', 'course']
 
     def get_course_details(self, obj):
-        return obj.course.title
+        """get details of the course"""
+        completed_modules = UserModuleProgress.objects.filter(
+            user=obj.user,
+            module__course=obj.course, 
+            is_completed=True
+        ).values_list('module__id', flat=True)
+
+        return {
+            "course_id": obj.course.id,
+            "completed_modules_id": list(completed_modules)
+        }
 
 class UserModuleProgressSerializer(serializers.ModelSerializer):
     course = serializers.SerializerMethodField()
