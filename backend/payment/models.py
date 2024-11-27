@@ -20,16 +20,18 @@ class PaymentPlans(models.Model):
 class StripeCustomers(models.Model):
     CUSTOMER_STATUS_CHOICES = (
         ('active', 'active'),
+        ('inactive', 'inactive'),
         ('canceled', 'canceled'),
         ('expired', 'expired'),
         ('past_due', 'past_due')
     )
     id = UUID_field()
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='customer', null=True)
     stripe_customer_id = models.CharField(max_length=200)
     current_plan = models.ForeignKey(PaymentPlans, on_delete=models.SET_NULL, related_name="plan", null=True)
     subscription_start = models.DateTimeField(null=True, blank=True)
     subscription_end = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=CUSTOMER_STATUS_CHOICES)
+    status = models.CharField(max_length=20, choices=CUSTOMER_STATUS_CHOICES, default='inactive')
 
 class PaymentTransaction(models.Model):
     """The payment for a course"""
