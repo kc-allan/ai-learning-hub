@@ -11,7 +11,8 @@ class PaymentPlans(models.Model):
         ('monthly', 'monthly'),
     )
     id = UUID_field()
-    stripe_price_id = models.CharField(max_length=200)
+    stripe_price_id = models.CharField(max_length=200, null=True, blank=True)
+    stripe_product_id = models.CharField(max_length=200, null=True, blank=True)
     name = models.CharField(max_length=20)
     price = models.DecimalField(decimal_places=2, max_digits=5)
     duration = models.CharField(max_length=20, choices = DURATION_CHOICES)

@@ -1,5 +1,11 @@
 from django.contrib import admin
 from .models import PaymentTransaction, PaymentPlans, StripeCustomers
+import stripe
+from decouple import config
+
+
+stripe.api_key = config('STRIPE_SECRET_KEY')
+
 
 @admin.register(PaymentTransaction)
 class PaymentTransactionAdmin(admin.ModelAdmin):
@@ -15,6 +21,31 @@ class PaymentPlansAdmin(admin.ModelAdmin):
     list_filter = ('duration',)
     search_fields = ('name',)
     ordering = ('price',)
+    readonly_fields = ('stripe_price_id', 'stripe_product_id')
+
+    def save_model(self, request, obj, form, change):
+        if not obj.stripe_price_id:
+            try:
+                # Check if product already exists in Stripe (optional, depending on your setup)
+                if not obj.stripe_product_id:
+                    # Create a new product in Stripe
+                    product = stripe.Product.create(
+                        name=obj.name,
+                        description=f"Subscription plan for {obj.name}",
+                    )
+                    obj.stripe_product_id = product.id
+                    
+                price = stripe.Price.create(
+                    unit_amount=int(obj.price * 100),
+                    currency="usd",
+                    product=obj.stripe_product_id,  # Use the product ID created above
+                )
+                obj.stripe_price_id = price.id
+
+            except Exception as e:
+                raise ValueError(f"Error creating product or price in Stripe: {str(e)}")
+
+        super().save_model(request, obj, form, change)
 
 @admin.register(StripeCustomers)
 class StripeCustomersAdmin(admin.ModelAdmin):
