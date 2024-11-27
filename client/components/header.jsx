@@ -1,72 +1,117 @@
-import { Layout } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Layout, Menu, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setLogout } from "../src/state";
-
 
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuth = useSelector((state) => state.token);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(setLogout());
-    navigate('/');
-  }
+    navigate("/");
+    setIsMobileMenuOpen(false);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const NavLinks = () => (
+    <>
+      {isAuth ? (
+        <>
+          <Link
+            to="/dashboard"
+            className="block px-4 py-2 text-gray-600 hover:text-gray-900 md:inline-block"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Dashboard
+          </Link>
+          <Link
+            to="/community"
+            className="block px-4 py-2 text-gray-600 hover:text-gray-900 md:inline-block"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Community
+          </Link>
+          <Link
+            to="/courses"
+            className="block px-4 py-2 text-gray-600 hover:text-gray-900 md:inline-block"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Courses
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="block w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-red-600 md:inline-block md:w-auto"
+          >
+            Log Out
+          </button>
+        </>
+      ) : (
+        <>
+          <Link
+            to="/auth/login"
+            className="block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 md:inline-block"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Login
+          </Link>
+          <Link
+            to="/auth/register"
+            className="block px-4 py-2 bg-gray-500 text-gray-600 rounded-lg hover:bg-gray-600 md:inline-block"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Sign Up
+          </Link>
+        </>
+      )}
+    </>
+  );
+
   return (
-    <header className="sticky justify-center items-center mb-8 top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-        <a href="/" className="cursor-pointer flex items-center gap-2">
+        {/* Logo */}
+        <Link to="/" className="cursor-pointer flex items-center gap-2">
           <Layout className="h-8 w-8 text-blue-500" />
           <span className="text-xl font-bold text-blue-500">
             AI Learning Hub
           </span>
-        </a>
-        <nav className="flex items-center gap-4">
-          {isAuth ? (
-            <>
-            <a
-                href="/dashboard"
-                className="px-4 py-2 text-gray-600 hover:text-gray-900"
-              >
-                Dashboard
-              </a>
-              <a
-                href="/community"
-                className="px-4 py-2 text-gray-600 hover:text-gray-900"
-              >
-                Community
-              </a>
-              <a
-                href="/courses"
-                className="px-4 py-2 text-gray-600 hover:text-gray-900"
-              >
-                Courses
-              </a>
-              <button
-                onClick={() => handleLogout()}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-red-600"
-              >
-                Log Out
-              </button>
-            </>
+        </Link>
+
+        {/* Mobile Menu Toggle */}
+        <button className="md:hidden z-60" onClick={toggleMobileMenu}>
+          {isMobileMenuOpen ? (
+            <X className="h-6 w-6 text-gray-800" />
           ) : (
-            <>
-              <a
-                href="/auth/login"
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-              >
-                Login
-              </a>
-              <a
-                href="/auth/register"
-                className="px-4 py-2 text-gray-600 hover:text-gray-900"
-              >
-                Courses
-              </a>
-            </>
+            <Menu className="h-6 w-6" />
           )}
+        </button>
+
+        {/* Desktop Navigation */}
+        <nav className="flex items-center space-x-4">
+          <NavLinks />
         </nav>
+
+        {/* Mobile Navigation Overlay */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 bg-white z-50 flex flex-col p-4 space-y-4 md:hidden">
+            <button
+              onClick={toggleMobileMenu}
+              className="self-end text-gray-800"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <div className="mt-4 space-y-2 text-center">
+              <NavLinks />
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

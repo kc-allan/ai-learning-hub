@@ -126,17 +126,6 @@ const CourseDetailPage = () => {
     }));
   };
 
-  const calculateScore = () => {
-    if (!quizData) return 0;
-    let correctAnswers = 0;
-    quizData.forEach((question) => {
-      if (selectedAnswers[question.id] === question.correct_answer_id) {
-        correctAnswers++;
-      }
-    });
-    return Math.round((correctAnswers / quizData.length) * 100);
-  };
-
   const renderQuizContent = () => {
     let answers = {
       answers: [],
