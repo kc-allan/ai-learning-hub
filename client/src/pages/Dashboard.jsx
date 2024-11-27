@@ -147,13 +147,13 @@ const Dashboard = () => {
                   <div
                     key={course.id}
                     className="flex items-center bg-gray-100 p-4 rounded-lg cursor-pointer"
-                    onClick={() => navigate(`/course/${course.course}`)}
+                    onClick={() => navigate(`/course/${course.course_details.course_id}`)}
                   >
                     {course.icon}
                     <div className="ml-4 flex-grow">
                       <div className="flex justify-between">
                         <span className="font-semibold">
-                          {course.course_details}
+                          {course.course_details.title}
                         </span>
                         <span>{course.percent_complete}%</span>
                       </div>
@@ -171,9 +171,9 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <div class="flex flex-col items-center">
+              <div className="flex flex-col items-center">
                 <svg
-                  class="w-12 h-12 text-gray-400 mb-2"
+                  className="w-12 h-12 text-gray-400 mb-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -185,8 +185,8 @@ const Dashboard = () => {
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                <p class="text-lg font-medium">No enrolled courses yet</p>
-                <p class="text-sm text-gray-400 mt-1">
+                <p className="text-lg font-medium">No enrolled courses yet</p>
+                <p className="text-sm text-gray-400 mt-1">
                   Check out our latest&nbsp;
                   <a href="/courses" className="text-blue-500 font-semibold">
                     courses
@@ -201,9 +201,9 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
           <h3 className="text-xl font-bold mb-4">Recent Courses</h3>
           {userProgress?.length == 0 ? (
-            <div class="flex flex-col justify-center items-center md:col-span-2 bg-white rounded-lg shadow-md p-6">
+            <div className="flex flex-col justify-center items-center md:col-span-2 bg-white rounded-lg shadow-md p-6">
               <svg
-                class="w-12 h-12 text-gray-400 mb-2"
+                className="w-12 h-12 text-gray-400 mb-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -215,8 +215,8 @@ const Dashboard = () => {
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                 />
               </svg>
-              <p class="text-lg font-medium">Nothing here</p>
-              <p class="text-sm text-gray-400 mt-1">
+              <p className="text-lg font-medium">Nothing here</p>
+              <p className="text-sm text-gray-400 mt-1">
                 You have not enrolled to any courses
               </p>
             </div>
@@ -229,7 +229,7 @@ const Dashboard = () => {
                 >
                   <div>
                     <span className="font-semibold">
-                      {course.course_details}
+                      {course.course_details.title}
                     </span>
                     <div className="text-sm text-gray-500">
                       Last accessed:{" "}
