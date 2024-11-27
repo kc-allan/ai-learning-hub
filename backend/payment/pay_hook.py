@@ -2,17 +2,20 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
-from .models import PaymentTransaction, StripeCustomers, PaymentPlans
+from .models import PaymentTransaction, StripeCustomers
 import stripe
-from django.conf import settings
-import json
 from datetime import datetime
 from decouple import config
+from django.utils import timezone
+from drf_yasg.utils import swagger_auto_schema
+
 
 stripe.api_key = config('STRIPE_SECRET_KEY')
 
+
 @method_decorator(csrf_exempt, name="dispatch")
 class StripeWebhookView(APIView):
+    @swagger_auto_schema(auto_schema=None)
     def post(self, request):
         payload = request.body
         sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
@@ -24,9 +27,9 @@ class StripeWebhookView(APIView):
             )
 
             # Handle specific event types
-            if event["type"] == "payment_intent.succeeded":
-                payment_intent = event["data"]["object"]
-                self.handle_payment_success(payment_intent)
+            if event["type"] == 'customer.subscription.created':
+                print("Event Data: ", event)
+                self.handle_payment_success(event)
 
             elif event["type"] == "invoice.payment_failed":
                 invoice = event["data"]["object"]
@@ -46,28 +49,30 @@ class StripeWebhookView(APIView):
         except stripe.error.SignatureVerificationError as e:
             return JsonResponse({"error": "Invalid signature"}, status=400)
 
-    def handle_payment_success(self, payment_intent):
-        # Handle successful payments and update the database
-        stripe_transaction_id = payment_intent.get("id")
-        amount = payment_intent.get("amount_received") / 100  # Convert to dollars
-        currency = payment_intent.get("currency")
+    def handle_payment_success(self, event):
+        stripe_subscription = stripe.Subscription.retrieve(event['data']['object']['id'])
+        customer = StripeCustomers.objects.get(stripe_customer_id=stripe_subscription.customer)
+        customer.subscription_start=timezone.make_aware(datetime.fromtimestamp(stripe_subscription.created))
+        customer.subscription_end = timezone.make_aware(datetime.fromtimestamp(stripe_subscription.current_period_end))
+        customer.status='active'
+        customer.save()
 
-        # Find the transaction in the database
-        transaction = PaymentTransaction.objects.get(
-            stripe_transaction_id=stripe_transaction_id
+        user = customer.user
+        user.is_premium = True
+        user.save()
+
+        PaymentTransaction.objects.create(
+            user=customer.user,
+            stripe_transaction_id=event['data']['object']['id'],
+            amount=event['data']['object']['items']['data'][0]['plan']['amount'] / 100,  # Convert from cents
+            currency=event['data']['object']['currency'],
+            payment_plan=customer.current_plan,
+            status='success'
         )
 
-        if transaction:
-            transaction.status = "success"
-            transaction.amount = amount
-            transaction.currency = currency
-            transaction.save()
-
     def handle_payment_failed(self, invoice):
-        # Handle failed payments and update the database
         stripe_transaction_id = invoice.get("id")
 
-        # Find the transaction in the database
         transaction = PaymentTransaction.objects.filter(
             stripe_transaction_id=stripe_transaction_id
         ).first()
@@ -77,7 +82,6 @@ class StripeWebhookView(APIView):
             transaction.save()
 
     def handle_subscription_update(self, subscription):
-        # Update subscription details in the database
         stripe_customer_id = subscription.get("customer")
         current_period_end = subscription.get("current_period_end")
 
