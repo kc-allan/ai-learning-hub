@@ -141,68 +141,117 @@ const Dashboard = () => {
               </Link>
             </div>
 
-            <div className="space-y-4">
-              {userProgress?.map((course) => (
-                <div
-                  key={course.id}
-                  className="flex items-center bg-gray-100 p-4 rounded-lg cursor-pointer"
-                  onClick={() => navigate(`/course/${course.course}`)}
-                >
-                  {course.icon}
-                  <div className="ml-4 flex-grow">
-                    <div className="flex justify-between">
-                      <span className="font-semibold">
-                        {course.course_details}
-                      </span>
-                      <span>{course.percent_complete}%</span>
-                    </div>
-                    <div className="w-full bg-gray-300 rounded-full h-2 mt-2">
-                      <div
-                        className="bg-blue-500 h-2 rounded-full"
-                        style={{ width: `${course.percent_complete}%` }}
-                      ></div>
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      {course.total_modules} Modules
+            {userProgress?.length > 0 ? (
+              <div className="space-y-4">
+                {userProgress?.map((course) => (
+                  <div
+                    key={course.id}
+                    className="flex items-center bg-gray-100 p-4 rounded-lg cursor-pointer"
+                    onClick={() => navigate(`/course/${course.course}`)}
+                  >
+                    {course.icon}
+                    <div className="ml-4 flex-grow">
+                      <div className="flex justify-between">
+                        <span className="font-semibold">
+                          {course.course_details}
+                        </span>
+                        <span>{course.percent_complete}%</span>
+                      </div>
+                      <div className="w-full bg-gray-300 rounded-full h-2 mt-2">
+                        <div
+                          className="bg-blue-500 h-2 rounded-full"
+                          style={{ width: `${course.percent_complete}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        {course.total_modules} Modules
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div class="flex flex-col items-center">
+                <svg
+                  class="w-12 h-12 text-gray-400 mb-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+                <p class="text-lg font-medium">No enrolled courses yet</p>
+                <p class="text-sm text-gray-400 mt-1">
+                  Check out our latest&nbsp;
+                  <a href="/courses" className="text-blue-500 font-semibold">
+                    courses
+                  </a>{" "}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Recent Courses and Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-          <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-xl font-bold mb-4">Recent Courses</h3>
-            {userProgress?.map((course) => (
-              <div
-                key={course.id}
-                className="flex justify-between items-center py-3 border-b"
+          <h3 className="text-xl font-bold mb-4">Recent Courses</h3>
+          {userProgress?.length == 0 ? (
+            <div class="flex flex-col justify-center items-center md:col-span-2 bg-white rounded-lg shadow-md p-6">
+              <svg
+                class="w-12 h-12 text-gray-400 mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <div>
-                  <span className="font-semibold">{course.course_details}</span>
-                  <div className="text-sm text-gray-500">
-                    Last accessed:{" "}
-                    {format(
-                      new Date(course.last_accessed),
-                      "dd-MMM-yyyy HH:mm"
-                    )}
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              <p class="text-lg font-medium">Nothing here</p>
+              <p class="text-sm text-gray-400 mt-1">
+                You have not enrolled to any courses
+              </p>
+            </div>
+          ) : (
+            <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
+              {userProgress?.map((course) => (
+                <div
+                  key={course.id}
+                  className="flex justify-between items-center py-3 border-b"
+                >
+                  <div>
+                    <span className="font-semibold">
+                      {course.course_details}
+                    </span>
+                    <div className="text-sm text-gray-500">
+                      Last accessed:{" "}
+                      {format(
+                        new Date(course.last_accessed),
+                        "dd-MMM-yyyy HH:mm"
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="mr-2">{course.percent_complete}%</span>
+                    <div className="w-20 bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-green-500 h-2 rounded-full"
+                        style={{ width: `${course.percent_complete}%` }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center">
-                  <span className="mr-2">{course.percent_complete}%</span>
-                  <div className="w-20 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-green-500 h-2 rounded-full"
-                      style={{ width: `${course.percent_complete}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-xl font-bold mb-4">Quick Actions</h3>
