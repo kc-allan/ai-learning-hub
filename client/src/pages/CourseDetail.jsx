@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   BookOpen,
   Brain,
@@ -17,10 +17,13 @@ import {
 } from "lucide-react";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
+import { setLogout } from "../state";
 
 const CourseDetailPage = () => {
   const { courseId } = useParams();
+  const dispatch = useDispatch();
   const [courseData, setCourseData] = useState(null);
+  const [userProgress, setUserProgress] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
   const [activeSection, setActiveSection] = useState("video");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -30,23 +33,55 @@ const CourseDetailPage = () => {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [activeQuizId, setActiveQuizId] = useState(null);
   const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const token = useSelector((state) => state.token);
 
   useEffect(() => {
-    const fetchCourseDetail = async () => {
+    const fetchCourseDetails = async () => {
       try {
-        const response = await fetch(`/api/v1/course/${courseId}`);
-        if (!response.ok) throw new Error("Failed to fetch course details");
-        const data = await response.json();
-        setCourseData(data);
-        setSelectedModule(data.modules[0]);
+        const [courseResponse, progressResponse] = await Promise.all([
+          fetch(`/api/v1/course/${courseId}`),
+          fetch(`/api/v1/user/progress/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+        ]);
+        if (courseResponse.status === 401 || progressResponse.status === 401) {
+          dispatch(setLogout());
+        }
+        if (!courseResponse.ok)
+          throw new Error("Failed to fetch course details");
+        if (!progressResponse.ok)
+          throw new Error("Failed to fetch user progress");
+
+        const courseData = await courseResponse.json();
+        const progressData = await progressResponse.json();
+
+        setCourseData(courseData);
+
+        // Find the user's progress for this specific course
+        const courseProgress = progressData.find(
+          (progress) => progress.course === courseId
+        );
+        setUserProgress(courseProgress);
+
+        // Select the first module or the last accessed module
+        const initialModule = courseData.modules[0];
+        setSelectedModule(initialModule);
+
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching course details:", error);
+        setError(error.message);
+        setLoading(false);
       }
     };
 
-    if (courseId) fetchCourseDetail();
-  }, [courseId]);
+    if (courseId && token) fetchCourseDetails();
+  }, [courseId, token]);
 
   const getLevelIcon = (level) => {
     switch (level.toLowerCase()) {
@@ -79,27 +114,34 @@ const CourseDetailPage = () => {
             <X className="w-6 h-6" />
           </button>
         </div>
-        {courseData.modules.map((module) => (
-          <div
-            key={module.id}
-            className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${
-              selectedModule?.id === module.id
-                ? "bg-blue-100 text-blue-800"
-                : "hover:bg-gray-100"
-            }`}
-            onClick={() => {
-              setSelectedModule(module);
-              setIsSidebarOpen(false);
-            }}
-          >
-            <div className="flex justify-between">
-              <h3 className="font-semibold">{module.title}</h3>
-              {!module.is_completed && (
-                <CheckCircle className="w-5 h-5 text-green-500" />
-              )}
+        {courseData.modules.map((module) => {
+          const isCompleted =
+            userProgress?.course_details?.completed_modules_id?.includes(
+              module.id
+            );
+
+          return (
+            <div
+              key={module.id}
+              className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${
+                selectedModule?.id === module.id
+                  ? "bg-blue-100 text-blue-800"
+                  : "hover:bg-gray-100"
+              }`}
+              onClick={() => {
+                setSelectedModule(module);
+                setIsSidebarOpen(false);
+              }}
+            >
+              <div className="flex justify-between">
+                <h3 className="font-semibold">{module.title}</h3>
+                {isCompleted && (
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
@@ -124,17 +166,6 @@ const CourseDetailPage = () => {
       ...prev,
       [questionId]: answerId,
     }));
-  };
-
-  const calculateScore = () => {
-    if (!quizData) return 0;
-    let correctAnswers = 0;
-    quizData.forEach((question) => {
-      if (selectedAnswers[question.id] === question.correct_answer_id) {
-        correctAnswers++;
-      }
-    });
-    return Math.round((correctAnswers / quizData.length) * 100);
   };
 
   const renderQuizContent = () => {
@@ -182,6 +213,8 @@ const CourseDetailPage = () => {
       }
 
       const score = results.attempt?.total_score || 0;
+      console.log(quizData);
+      
 
       return (
         <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -193,7 +226,7 @@ const CourseDetailPage = () => {
                   : "bg-red-100 text-red-600"
               }`}
             >
-              {score >= 70 ? (
+              {Number(score) == quizData.length ? (
                 <CheckCircle className="w-8 h-8" />
               ) : (
                 <XCircle className="w-8 h-8" />
@@ -205,6 +238,8 @@ const CourseDetailPage = () => {
 
           <div className="space-y-6">
             {quizData.map((question, index) => {
+              console.log(quizData);
+              
               const isCorrect =
                 selectedAnswers[question.id] ===
                 results.attempt.responses.find(
@@ -382,16 +417,18 @@ const CourseDetailPage = () => {
             >
               <FileText className="w-5 h-5" />
             </button>
-            <button
-              className={`p-2 rounded-full ${
-                activeSection === "quiz"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
-              onClick={() => setActiveSection("quiz")}
-            >
-              <ListChecks className="w-5 h-5" />
-            </button>
+            {selectedModule.quizzes.length > 0 && (
+              <button
+                className={`p-2 rounded-full ${
+                  activeSection === "quiz"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+                onClick={() => setActiveSection("quiz")}
+              >
+                <ListChecks className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -408,6 +445,9 @@ const CourseDetailPage = () => {
 
         {activeSection === "content" && (
           <div className="prose max-w-none">
+            <h3 className="text-xl font-semibold mb-4">
+              {selectedModule.description}
+            </h3>
             <p>{selectedModule.content}</p>
           </div>
         )}
@@ -447,6 +487,9 @@ const CourseDetailPage = () => {
   const renderCourseHeader = () => {
     if (!courseData) return null;
 
+    const { course } = courseData;
+    const progressPercentage = userProgress?.percent_complete || 0;
+
     return (
       <>
         <Header />
@@ -460,44 +503,59 @@ const CourseDetailPage = () => {
                 <Menu className="w-6 h-6" />
               </button>
               <img
-                src={courseData.course.thumbnail}
-                alt={courseData.course.title}
+                src={course.thumbnail}
+                alt={course.title}
                 className="w-12 h-12 md:w-16 md:h-16 rounded-lg mr-4"
               />
               <div>
                 <h1 className="text-xl md:text-2xl font-bold">
-                  {courseData.course.title}
+                  {course.title}
                 </h1>
                 <div className="flex flex-wrap items-center mt-2 gap-2">
-                  {getLevelIcon(courseData.course.level)}
+                  {getLevelIcon(course.level)}
                   <span className="text-gray-600">
-                    {courseData.course.level.charAt(0).toUpperCase() +
-                      courseData.course.level.slice(1)}{" "}
+                    {course.level.charAt(0).toUpperCase() +
+                      course.level.slice(1)}{" "}
                     Level
                   </span>
-                  {courseData.course.is_premium && (
+                  {course.is_premium && (
                     <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs">
                       Premium
                     </span>
                   )}
+                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                    {progressPercentage}% Complete
+                  </span>
                 </div>
               </div>
             </div>
-            <button className="w-full sm:w-auto bg-blue-500 text-white px-6 py-2 rounded-lg">
-              Download Course Materials
-            </button>
+            <div className="flex flex-col items-end">
+              <span className="text-sm text-gray-600">
+                {userProgress?.completed_modules || 0} / {course.total_modules}{" "}
+                Modules
+              </span>
+            </div>
           </div>
         </div>
       </>
     );
   };
 
-  if (!courseData)
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Loading...
+        Loading course details...
       </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600">
+        Error: {error}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -513,6 +571,7 @@ const CourseDetailPage = () => {
         {renderModuleNavigation()}
         {renderModuleContent()}
       </div>
+      <Footer />
     </div>
   );
 };

@@ -1,133 +1,169 @@
 import React, { useState, useEffect } from "react";
+import { format } from "date-fns";
 import {
   MessageSquare,
-  Trash2,
   RefreshCw,
   PlusCircle,
-  ChevronDown,
+  Newspaper,
   Send,
-  Loader2,
+  MessageCircle,
 } from "lucide-react";
 import {
   Card,
-  CardHeader,
-  CardContent,
   Typography,
-  CardActions,
   Button,
-  Input,
   TextField,
-  Alert,
-  DialogTitle,
-  DialogActions,
-  DialogContent,
   Dialog,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  Collapse,
+  Tabs,
+  Tab,
+  Box,
 } from "@mui/material";
-import { ExpandMoreOutlined } from "@mui/icons-material";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/header";
+
+import { timeElapsed } from "../../utils";
+import { setLogout } from "../state";
 
 const ForumPage = () => {
   const [forums, setForums] = useState([]);
   const [currentForum, setCurrentForum] = useState(null);
   const [threads, setThreads] = useState([]);
-  const [replies, setReplies] = useState({});
+  const [newsArticles, setNewsArticles] = useState([]);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [isCreatingThread, setIsCreatingThread] = useState(false);
   const [newThread, setNewThread] = useState({ title: "", content: "" });
-  const [newReply, setNewReply] = useState({ content: "" });
-  const [openThreads, setOpenThreads] = useState({});
-  const [isNewThreadOpen, setIsNewThreadOpen] = useState(false);
+  const [replies, setReplies] = useState({});
+  const [newReplies, setNewReplies] = useState({});
+  const [expandedThreads, setExpandedThreads] = useState({});
   const token = useSelector((state) => state.token);
-
-  const handleOpen = () => setIsNewThreadOpen(true);
-  const handleClose = () => setIsNewThreadOpen(false);
+  const currentUser = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [mobileTab, setMobileTab] = useState(0);
 
   useEffect(() => {
     fetchForums();
+    fetchNewsArticles();
   }, []);
 
   useEffect(() => {
-    if (currentForum) {
-      fetchThreads(currentForum.id);
-    }
+    if (currentForum) fetchThreads(currentForum.id);
   }, [currentForum]);
-
-  // Add new useEffect to fetch replies for all threads when they're loaded
-  useEffect(() => {
-    if (threads.length > 0) {
-      threads.forEach(thread => {
-        fetchReplies(thread.id);
-      });
-    }
-  }, [threads]);
 
   const fetchForums = async () => {
     try {
-      setLoading(true);
       const response = await fetch(`/api/v1/community/forums/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
+      if (response.status === 401) {
+        return dispatch(setLogout());
+      }
       const data = await response.json();
       setForums(data);
-      setLoading(false);
+      if (!currentForum && data.length > 0) setCurrentForum(data[0]);
     } catch (err) {
-      setError("Failed to load forums");
-      setLoading(false);
+      setError("Failed to load forums.");
     }
   };
 
   const fetchThreads = async (forumId) => {
     try {
-      setLoading(true);
       const response = await fetch(
         `/api/v1/community/forums/${forumId}/threads/`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
+      if (response.status === 401) return dispatch(setLogout());
       const data = await response.json();
-      setThreads(data);
-      setLoading(false);
+
+      // Fetch replies for each thread
+      const threadsWithReplies = await Promise.all(
+        data.map(async (thread) => {
+          const repliesResponse = await fetch(
+            `/api/v1/community/forums/threads/${thread.id}/replies/`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          if (repliesResponse.status === 401) return dispatch(setLogout());
+          const threadReplies = await repliesResponse.json();
+          return { ...thread, replies: threadReplies };
+        })
+      );
+
+      setThreads(threadsWithReplies);
     } catch (err) {
-      setError("Failed to load threads");
-      setLoading(false);
+      setError("Failed to load threads.");
     }
   };
 
-  const fetchReplies = async (threadId) => {
+  const fetchNewsArticles = async () => {
+    try {
+      const response = await fetch(`/api/v1/community/news/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status === 401) return dispatch(setLogout());
+      const data = await response.json();
+      setNewsArticles(data);
+      console.log(newsArticles);
+    } catch (err) {
+      setError("Failed to load news articles.");
+    }
+  };
+
+  const postReply = async (threadId) => {
+    if (!newReplies[threadId]?.trim()) return;
     try {
       const response = await fetch(
         `/api/v1/community/forums/threads/${threadId}/replies/`,
         {
+          method: "POST",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({ content: newReplies[threadId] }),
         }
       );
-      const data = await response.json();
-      setReplies(prev => ({ ...prev, [threadId]: data }));
-      // Don't automatically set openThreads here
+      if (response.status === 401) return dispatch(setLogout());
+
+      if (!response.ok) throw new Error("Failed to post reply.");
+
+      // Fetch updated replies after posting
+      const repliesResponse = await fetch(
+        `/api/v1/community/forums/threads/${threadId}/replies/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const updatedReplies = await repliesResponse.json();
+      if (updatedReplies.status === 401) return dispatch(setLogout());
+
+      // Update the thread's replies
+      setThreads((prevThreads) =>
+        prevThreads.map((thread) =>
+          thread.id === threadId
+            ? { ...thread, replies: updatedReplies }
+            : thread
+        )
+      );
+
+      // Clear the new reply input
+      setNewReplies((prevReplies) => ({ ...prevReplies, [threadId]: "" }));
     } catch (err) {
-      setError("Failed to load replies");
+      setError(err.message);
     }
   };
 
-  const toggleThread = (threadId) => {
-    setOpenThreads(prev => ({
-      ...prev,
-      [threadId]: !prev[threadId]
-    }));
-  };
-
   const createThread = async () => {
+    if (!newThread.title.trim() || !newThread.content.trim()) return;
     try {
       const response = await fetch(
         `/api/v1/community/forums/${currentForum.id}/threads/`,
@@ -140,263 +176,320 @@ const ForumPage = () => {
           body: JSON.stringify(newThread),
         }
       );
-      if (!response.ok) throw new Error("Failed to create thread");
-      fetchThreads(currentForum.id);
+      if (response.status === 401) return dispatch(setLogout());
+      if (!response.ok) throw new Error("Failed to create thread.");
       setNewThread({ title: "", content: "" });
-      setIsNewThreadOpen(false);
+      setIsCreatingThread(false);
+      fetchThreads(currentForum.id);
     } catch (err) {
-      setError("Failed to create thread");
+      setError("Failed to create thread.");
     }
   };
 
-  const createReply = async (threadId) => {
-    if (!newReply.content.trim()) return;
-    try {
-      const response = await fetch(
-        `/api/v1/community/forums/threads/${threadId}/replies/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(newReply),
-        }
-      );
-      if (!response.ok) throw new Error("Failed to create reply");
-      await fetchReplies(threadId);
-      setNewReply({ content: "" });
-    } catch (err) {
-      setError("Failed to create reply");
-    }
+  const toggleThreadReplies = (threadId) => {
+    setExpandedThreads((prev) => ({
+      ...prev,
+      [threadId]: !prev[threadId],
+    }));
   };
 
-  const deleteReply = async (replyId, threadId) => {
-    try {
-      await fetch(`/api/v1/community/threads/replies/${replyId}/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        method: "DELETE",
-      });
-      await fetchReplies(threadId);
-    } catch (err) {
-      setError("Failed to delete reply");
-    }
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
+  const handleMobileTabChange = (event, newValue) => {
+    setMobileTab(newValue);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-8">
         {error && (
-          <Alert variant="destructive" className="mb-6">
-            <Typography>{error}</Typography>
+          <Alert severity="error" className="mb-4">
+            {error}
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-1">
-            <Card className="sticky top-6">
-              <CardHeader className="space-y-1">
-                <Typography className="flex justify-between items-center">
-                  Forums
+        {/* Mobile Tabs - Only visible on smaller screens */}
+        <Box
+          sx={{
+            display: { xs: "block", lg: "none" },
+            width: "100%",
+            marginBottom: 2,
+          }}
+        >
+          <Tabs
+            value={mobileTab}
+            onChange={handleMobileTabChange}
+            variant="fullWidth"
+            centered
+          >
+            <Tab icon={<MessageSquare />} label="Forums" />
+            <Tab icon={<Newspaper />} label="News" />
+          </Tabs>
+        </Box>
+
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+          {/* Forums Sidebar - Hidden on mobile when News tab is active */}
+          <div
+            className={`
+              space-y-4 
+              lg:col-span-1 
+              overflow-y-auto 
+              max-h-screen 
+              ${mobileTab === 0 || "hidden lg:block"}
+            `}
+          >
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <Typography variant="h6">Forums</Typography>
+                <Button variant="text" onClick={fetchForums}>
+                  <RefreshCw className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {forums.map((forum) => (
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className={loading ? "animate-spin" : ""}
-                    onClick={fetchForums}
+                    key={forum.id}
+                    fullWidth
+                    variant={
+                      forum.id === currentForum?.id ? "contained" : "outlined"
+                    }
+                    onClick={() => setCurrentForum(forum)}
                   >
-                    <RefreshCw className="h-4 w-4" />
+                    <MessageSquare className="mr-2 h-5 w-5" />
+                    {forum.title}
                   </Button>
-                </Typography>
-              </CardHeader>
-              <CardContent>
-                <nav className="space-y-1">
-                  {forums.map((forum) => (
-                    <Button
-                      key={forum.id}
-                      variant={
-                        currentForum?.id === forum.id ? "secondary" : "ghost"
-                      }
-                      className="w-full justify-start"
-                      onClick={() => setCurrentForum(forum)}
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      {forum.title}
-                    </Button>
-                  ))}
-                </nav>
-              </CardContent>
+                ))}
+              </div>
             </Card>
           </div>
 
-          <div className="md:col-span-3 space-y-6">
+          {/* Threads Content - Hidden on mobile when News tab is active */}
+          <div
+            className={`
+              lg:col-span-3 
+              space-y-4 
+              lg:overflow-y-auto 
+              lg:h-screen 
+              ${mobileTab === 0 || "hidden lg:block"}
+            `}
+          >
             {currentForum && (
-              <>
-                <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold">{currentForum.title}</h2>
-                  <div id="dialog-trigger">
-                    <Button variant="contained" onClick={handleOpen}>
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      New Thread
-                    </Button>
-                  </div>
-                  <Dialog
-                    open={isNewThreadOpen}
-                    onOpenChange={setIsNewThreadOpen}
+              <Card className="p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <Typography variant="h5">
+                    {currentForum.title} Threads
+                  </Typography>
+                  <Button
+                    variant="default"
+                    onClick={() => setIsCreatingThread(true)}
+                    className="bg-blue-500 hover:bg-blue-600 flex items-center justify-center"
                   >
-                    <DialogContent>
-                      <Typography>
-                        <DialogTitle>Create New Thread</DialogTitle>
-                        <Typography>
-                          Start a new discussion in {currentForum.title}
-                        </Typography>
-                      </Typography>
-                      <div className="space-y-4 py-4">
-                        <Input
-                          placeholder="Thread Title"
-                          value={newThread.title}
-                          onChange={(e) =>
-                            setNewThread({
-                              ...newThread,
-                              title: e.target.value,
-                            })
-                          }
-                        />
-                        <TextField
-                          placeholder="Thread Content"
-                          value={newThread.content}
-                          onChange={(e) =>
-                            setNewThread({
-                              ...newThread,
-                              content: e.target.value,
-                            })
-                          }
-                          rows={5}
-                        />
-                      </div>
-                      <DialogActions>
-                        <Button
-                          variant="outline"
-                          onClick={() => setIsNewThreadOpen(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={createThread}
-                          disabled={!newThread.title || !newThread.content}
-                        >
-                          Create Thread
-                        </Button>
-                      </DialogActions>
-                    </DialogContent>
-                  </Dialog>
+                    <PlusCircle className="h-5 w-5 md:mr-2" />
+                    <span className="hidden md:inline">New Thread</span>
+                  </Button>
                 </div>
-
-                {threads.map((thread) => (
-                  <Card key={thread.id}>
-                    <CardHeader>
-                      <Typography>{thread.title}</Typography>
-                      <p className="text-sm text-muted-foreground">
-                        Posted {formatDate(thread.created_at)}
-                      </p>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="whitespace-pre-wrap">{thread.content}</p>
-                    </CardContent>
-                    <CardActions className="flex flex-col items-stretch">
-                      <Accordion
-                        open={openThreads[thread.id]}
-                        onOpenChange={() => toggleThread(thread.id)}
+                <div className="space-y-4">
+                  {threads.length === 0 ? (
+                    <Typography>
+                      No threads yet. Be the first to post!
+                    </Typography>
+                  ) : (
+                    threads.map((thread) => (
+                      <Card
+                        key={thread.id}
+                        className="p-4 hover:shadow-md space-y-4"
                       >
-                        <AccordionSummary id="collapsible-trigger">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-between"
+                        <div className="bg-gray-100 p-2 pb-4 rounded-sm">
+                          <Typography
+                            variant="subtitle1"
+                            className="flex items-center gap-2"
                           >
-                            {replies[thread.id]?.length || 0} Replies
-                            <ChevronDown
-                              className={`h-4 w-4 transition-transform ${
-                                openThreads[thread.id]
-                                  ? "transform rotate-180"
-                                  : ""
-                              }`}
-                            />
-                          </Button>
-                        </AccordionSummary>
-                        <AccordionDetails className="space-y-4 pt-4">
-                          {replies[thread.id]?.map((reply) => (
-                            <div
-                              key={reply.id}
-                              className="bg-muted p-4 rounded-lg"
-                            >
-                              <div className="flex justify-between items-start">
-                                <div className="space-y-1">
-                                  <p className="text-sm font-medium">
-                                    {reply.written_by}
-                                  </p>
-                                  <p>{reply.content}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {formatDate(reply.created_at)}
-                                  </p>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() =>
-                                    deleteReply(reply.id, thread.id)
-                                  }
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
+                            <h1 className="font-bold text-black">
+                              {thread.title}
+                            </h1>
+                            <span className="text-xs text-gray-500">
+                              {timeElapsed(thread.created_at)}
+                            </span>
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            className="text-gray-600"
+                            sx={{
+                              marginTop: "8px",
+                            }}
+                          >
+                            {thread.content}
+                          </Typography>
+                        </div>
 
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              placeholder="Write a reply..."
-                              value={newReply.content}
-                              onChange={(e) =>
-                                setNewReply({ content: e.target.value })
-                              }
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                  e.preventDefault();
-                                  createReply(thread.id);
+                        {/* Replies Section */}
+                        <div>
+                          <Button
+                            variant="text"
+                            startIcon={<MessageCircle />}
+                            onClick={() => toggleThreadReplies(thread.id)}
+                          >
+                            {thread.replies?.length || 0} Replies
+                          </Button>
+
+                          <Collapse in={expandedThreads[thread.id]}>
+                            <div className="space-y-2 bg-gray-100 p-3 rounded-lg max-h-[500px] overflow-y-auto">
+                              {thread.replies?.length === 0 ? (
+                                <Typography
+                                  variant="body2"
+                                  className="text-gray-500"
+                                >
+                                  No replies yet
+                                </Typography>
+                              ) : (
+                                thread.replies?.map((reply) => (
+                                  <div
+                                    key={reply.id}
+                                    className="bg-white p-2 rounded-md shadow-sm"
+                                  >
+                                    <Typography
+                                      variant="body2"
+                                      className="text-gray-800"
+                                    >
+                                      <span className="font-bold">
+                                        {reply.written_by}
+                                      </span>{" "}
+                                      <span>
+                                        {reply?.written_by ===
+                                          currentUser.username && "(You)"}
+                                      </span>
+                                      : {reply.content}
+                                    </Typography>
+                                    <span className="text-xs text-gray-500">
+                                      {format(
+                                        new Date(reply.created_at),
+                                        "dd MMM yyyy • HH:mm"
+                                      )}
+                                    </span>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                            {/* Reply Input */}
+                            <div className="flex items-center gap-2 mt-4">
+                              <TextField
+                                fullWidth
+                                size="small"
+                                placeholder="Write a reply..."
+                                value={newReplies[thread.id] || ""}
+                                onChange={(e) =>
+                                  setNewReplies((prev) => ({
+                                    ...prev,
+                                    [thread.id]: e.target.value,
+                                  }))
                                 }
-                              }}
-                            />
-                            <Button
-                              size="icon"
-                              onClick={() => createReply(thread.id)}
-                              disabled={!newReply.content.trim()}
-                            >
-                              <Send className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </AccordionDetails>
-                      </Accordion>
-                    </CardActions>
-                  </Card>
-                ))}
-              </>
+                              />
+                              <Button
+                                size="small"
+                                variant="contained"
+                                onClick={() => postReply(thread.id)}
+                                startIcon={<Send />}
+                              >
+                                Send
+                              </Button>
+                            </div>
+                          </Collapse>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </Card>
             )}
           </div>
+
+          {/* News Sidebar - Responsive rendering */}
+          <div
+            className={`
+              lg:col-span-2 
+              space-y-4 
+              lg:overflow-y-auto 
+              lg:h-screen 
+              ${mobileTab === 1 || "hidden lg:block"}
+            `}
+          >
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <Typography variant="h6">Latest News</Typography>
+                <Button variant="text" onClick={fetchNewsArticles}>
+                  <RefreshCw className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="space-y-4">
+                {newsArticles.map((article) => (
+                  <Card key={article.id} className="p-4 hover:shadow-md">
+                    <Typography variant="subtitle2">
+                      <h1 className="font-bold">{article.title}</h1>
+                      <span className="text-xs text-gray-500">
+                        {format(
+                          new Date(article.published_at),
+                          "dd MMM yyyy • HH:mm"
+                        )}
+                      </span>
+                    </Typography>
+                    <img
+                      src={article.image_url}
+                      className="object-contain my-4"
+                    />
+                    <Typography variant="body2">
+                      <h2 className="text-gray-600 mt-4">
+                        {article.description}
+                      </h2>
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => window.open(article.url, "_blank")}
+                    >
+                      Read More
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            </Card>
+          </div>
         </div>
+
+        {/* New Thread Dialog */}
+        <Dialog
+          open={isCreatingThread}
+          onClose={() => setIsCreatingThread(false)}
+          fullWidth
+        >
+          <DialogTitle>Create New Thread</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Title"
+              fullWidth
+              margin="normal"
+              value={newThread.title}
+              onChange={(e) =>
+                setNewThread({ ...newThread, title: e.target.value })
+              }
+            />
+            <TextField
+              label="Content"
+              fullWidth
+              margin="normal"
+              multiline
+              rows={4}
+              value={newThread.content}
+              onChange={(e) =>
+                setNewThread({ ...newThread, content: e.target.value })
+              }
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsCreatingThread(false)}>Cancel</Button>
+            <Button variant="contained" onClick={createThread}>
+              Create
+            </Button>
+          </DialogActions>
+        </Dialog>
       </main>
     </div>
   );

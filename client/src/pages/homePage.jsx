@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Brain, Code, Search, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  BookOpen,
+  Brain,
+  Code,
+  Search,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 import Footer from "../../components/footer";
 import Header from "../../components/header";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { setLogout } from "../state";
 
 const CourseCard = ({ course, onClick }) => {
   // console.log(course)
@@ -107,43 +117,49 @@ const LoadingState = () => (
 );
 
 const ModuleDetails = ({ module, isOpen, onToggle }) => {
-	return (
-	  <div className="bg-gray-100 rounded-lg mb-2 overflow-hidden">
-		<div 
-		  className="p-3 flex justify-between items-center cursor-pointer"
-		  onClick={onToggle}
-		>
-		  <div className="flex items-center gap-3">
-			<span>{module.title}</span>
-		  </div>
-		  {isOpen ? <ChevronUp className="text-gray-500" /> : <ChevronDown className="text-gray-500" />}
-		</div>
-		<div 
-		  className={`transition-all duration-300 ease-in-out overflow-hidden ${
-			isOpen ? 'max-h-96 opacity-100 visible' : 'max-h-0 opacity-0 invisible'
-		  }`}
-		>
-		  <div className="p-4 bg-white border-t">
-			<p className="text-gray-700 mb-4">{module.description}</p>
-			<div className="grid grid-cols-2 gap-4">
-			  <div className="bg-blue-50 p-3 rounded-lg">
-				<h4 className="font-semibold text-sm mb-2">Assignments</h4>
-				<span className="text-blue-800 font-bold">
-				  {module.module_assignments.length || 0}
-				</span>
-			  </div>
-			  <div className="bg-green-50 p-3 rounded-lg">
-				<h4 className="font-semibold text-sm mb-2">Quizzes</h4>
-				<span className="text-green-800 font-bold">
-				  {module.quizzes.length || 0}
-				</span>
-			  </div>
-			</div>
-		  </div>
-		</div>
-	  </div>
-	);
-  };
+  return (
+    <div className="bg-gray-100 rounded-lg mb-2 overflow-hidden">
+      <div
+        className="p-3 flex justify-between items-center cursor-pointer"
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-3">
+          <span>{module.title}</span>
+        </div>
+        {isOpen ? (
+          <ChevronUp className="text-gray-500" />
+        ) : (
+          <ChevronDown className="text-gray-500" />
+        )}
+      </div>
+      <div
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isOpen
+            ? "max-h-96 opacity-100 visible"
+            : "max-h-0 opacity-0 invisible"
+        }`}
+      >
+        <div className="p-4 bg-white border-t">
+          <p className="text-gray-700 mb-4">{module.description}</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <h4 className="font-semibold text-sm mb-2">Assignments</h4>
+              <span className="text-blue-800 font-bold">
+                {module.module_assignments.length || 0}
+              </span>
+            </div>
+            <div className="bg-green-50 p-3 rounded-lg">
+              <h4 className="font-semibold text-sm mb-2">Quizzes</h4>
+              <span className="text-green-800 font-bold">
+                {module.quizzes.length || 0}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const HomePage = () => {
   const [courses, setCourses] = useState([]);
@@ -154,7 +170,10 @@ const HomePage = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courseModules, setCourseModules] = useState(null);
   const [openModuleIndex, setOpenModuleIndex] = useState(null);
+  const [userProgress, setUserProgress] = useState(null);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const token = useSelector((state) => state.token);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -173,6 +192,31 @@ const HomePage = () => {
     fetchCourses();
   }, []);
 
+  useEffect(() => {
+    const fetchUserProgress = async () => {
+      try {
+        const userProgressResponse = await fetch("/api/v1/user/progress", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        {
+          userProgressResponse.status === 401 && dispatch(setLogout());
+        }
+        if (!userProgressResponse.ok) {
+          const errorData = await userProgressResponse.json();
+          throw new Error(errorData);
+        }
+        const data = await userProgressResponse.json();
+        setUserProgress(data);
+      } catch (error) {
+        console.log(error.message);
+        setError(error.message);
+      }
+    };
+    fetchUserProgress();
+  }, []);
+
   const fetchCourseModules = async (courseId) => {
     try {
       const response = await fetch(`/api/v1/course/${courseId}`);
@@ -188,14 +232,14 @@ const HomePage = () => {
 
   const handleCourseClick = (course) => {
     setSelectedCourse(course);
-	setCourseModules(null)
+    setCourseModules(null);
     fetchCourseModules(course.id);
     setOpenModuleIndex(null);
   };
 
   const handleModuleToggle = (index) => {
     setOpenModuleIndex(openModuleIndex === index ? null : index);
-  };;
+  };
 
   const filteredCourses = courses.filter((course) => {
     const matchesSearch = course.title
@@ -207,6 +251,10 @@ const HomePage = () => {
         : course.level.toLowerCase() === selectedLevel.toLowerCase();
     return matchesSearch && matchesLevel;
   });
+
+  const enrolledCourses = userProgress?.map((course) => {
+    return course.course_details.course_id
+  })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -286,20 +334,20 @@ const HomePage = () => {
               <div className="flex justify-between mb-4">
                 <h3 className="text-lg font-semibold mb-2">Course Modules</h3>
                 <span className="inline-flex px-2 py-1 text-sm font-medium bg-gray-100 text-gray-800 rounded-full">
-                  { courseModules ? courseModules.length : 0} Modules
+                  {courseModules ? courseModules.length : 0} Modules
                 </span>
               </div>
               {courseModules ? (
                 <ul className="space-y-2">
-				{courseModules.map((module, index) => (
-				  <ModuleDetails 
-					key={module.id} 
-					module={module} 
-					isOpen={openModuleIndex === index}
-					onToggle={() => handleModuleToggle(index)}
-				  />
-				))}
-			  </ul>
+                  {courseModules.map((module, index) => (
+                    <ModuleDetails
+                      key={module.id}
+                      module={module}
+                      isOpen={openModuleIndex === index}
+                      onToggle={() => handleModuleToggle(index)}
+                    />
+                  ))}
+                </ul>
               ) : (
                 <div className="bg-gray-100 p-3 rounded-lg text-center text-gray-600">
                   Loading modules...
@@ -307,22 +355,35 @@ const HomePage = () => {
               )}
             </div>
 
-            <div className="flex gap-4">
-              <button
-                className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                onClick={() => {
-                  navigate(`/course/${selectedCourse.id}`)
-                }}
-              >
-                Enroll Now
-              </button>
-              <button
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
-                onClick={() => setSelectedCourse(null)}
-              >
-                Close
-              </button>
-            </div>
+            {enrolledCourses.includes(selectedCourse.id) ? (
+              <div>
+                <button
+                  className="flex-1 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  onClick={() => {
+                    navigate(`/course/${selectedCourse.id}`);
+                  }}
+                >
+                  View
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-4">
+                <button
+                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  onClick={() => {
+                    navigate(`/course/${selectedCourse.id}`);
+                  }}
+                >
+                  Enroll Now
+                </button>
+                <button
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                  onClick={() => setSelectedCourse(null)}
+                >
+                  Close
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
