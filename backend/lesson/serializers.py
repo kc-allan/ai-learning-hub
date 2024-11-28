@@ -43,7 +43,7 @@ class ModuleDetailedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Module
-        fields = ['id', 'title', 'description', 'content', 'video_url', 'quizzes', 'module_assignments']
+        fields = ['id', 'title', 'description', 'video_url', 'quizzes', 'module_assignments']
 
 class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,7 +55,7 @@ class UserCourseProgressSerializer(serializers.ModelSerializer):
     course_details = serializers.SerializerMethodField()
     class Meta:
         model = UserCourseProgress
-        fields = ['id', 'course_details', 'completed_modules', 'total_modules', 'percent_complete', 'is_completed', 'last_accessed', 'course']
+        fields = ['id', 'course_details', 'completed_modules', 'total_modules', 'percent_complete', 'is_completed', 'last_accessed']
 
     def get_course_details(self, obj):
         """get details of the course"""
@@ -66,6 +66,7 @@ class UserCourseProgressSerializer(serializers.ModelSerializer):
         ).values_list('module__id', flat=True)
 
         return {
+            "title": obj.course.title,
             "course_id": obj.course.id,
             "completed_modules_id": list(completed_modules)
         }
