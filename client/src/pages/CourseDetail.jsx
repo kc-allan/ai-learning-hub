@@ -35,40 +35,62 @@ const CourseDetailPage = () => {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const token = useSelector((state) => state.token);
+
+  useEffect(() => {
+    const fetchUserProgress = async () => {
+      try {
+        const response = await fetch(`/api/v1/user/progress/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) {
+          dispatch(setLogout());
+          return;
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch user progress");
+        }
+
+        const responseData = await response.json();
+        // Find progress for the current course
+        const currentCourseProgress = responseData.find(
+          (progress) => progress.course_details.course_id === courseId
+        );
+
+        setUserProgress(currentCourseProgress);
+      } catch (error) {
+        console.error("Error fetching user progress:", error);
+        setError(error.message);
+      }
+    };
+
+    fetchUserProgress();
+  }, [courseId, token, dispatch]);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        const [courseResponse, progressResponse] = await Promise.all([
-          fetch(`/api/v1/course/${courseId}`),
-          fetch(`/api/v1/user/progress/`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ]);
-        if (courseResponse.status === 401 || progressResponse.status === 401) {
-          dispatch(setLogout());
+        const courseResponse = await fetch(`/api/v1/course/${courseId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (courseResponse.status === 401) {
+          return dispatch(setLogout());
         }
         if (!courseResponse.ok)
           throw new Error("Failed to fetch course details");
-        if (!progressResponse.ok)
-          throw new Error("Failed to fetch user progress");
 
         const courseData = await courseResponse.json();
-        const progressData = await progressResponse.json();
 
         setCourseData(courseData);
 
-        // Find the user's progress for this specific course
-        const courseProgress = progressData.find(
-          (progress) => progress.course === courseId
-        );
-        setUserProgress(courseProgress);
-
-        // Select the first module or the last accessed module
         const initialModule = courseData.modules[0];
         setSelectedModule(initialModule);
 
@@ -97,7 +119,7 @@ const CourseDetailPage = () => {
   };
 
   const renderModuleNavigation = () => {
-    if (!courseData) return null;
+    if (!courseData && !userProgress) return null;
 
     return (
       <div
@@ -180,53 +202,24 @@ const CourseDetailPage = () => {
       });
     });
 
-    if (!quizData) return null;
-
-    if (quizSubmitted) {
-      const fetchScore = async (quizId) => {
-        try {
-          const response = await fetch(`/api/v1/quiz/${quizId}/submit/`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(answers),
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch Score");
-          }
-
-          const result = await response.json();
-          setResults(result);
-        } catch (error) {
-          console.error(error.message);
-        }
-      };
-
-      fetchScore(activeQuizId);
-
-      // Guard clause to handle null `results`
+    const renderResults = () => {
       if (!results) {
         return <div>Loading your quiz results...</div>;
       }
 
       const score = results.attempt?.total_score || 0;
-      console.log(quizData);
-      
 
       return (
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="text-center mb-6">
             <div
               className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${
-                Number(score) === quizData.length
+                results.attempt.passed
                   ? "bg-green-100 text-green-600"
                   : "bg-red-100 text-red-600"
               }`}
             >
-              {Number(score) == quizData.length ? (
+              {results.attempt.passed ? (
                 <CheckCircle className="w-8 h-8" />
               ) : (
                 <XCircle className="w-8 h-8" />
@@ -238,8 +231,6 @@ const CourseDetailPage = () => {
 
           <div className="space-y-6">
             {quizData.map((question, index) => {
-              console.log(quizData);
-              
               const isCorrect =
                 selectedAnswers[question.id] ===
                 results.attempt.responses.find(
@@ -309,6 +300,39 @@ const CourseDetailPage = () => {
           </div>
         </div>
       );
+    };
+
+    if (!quizData) return null;
+    const handleQuizSubmit = () => {
+      if (quizSubmitted) {
+        const fetchScore = async (quizId) => {
+          try {
+            const response = await fetch(`/api/v1/quiz/${quizId}/submit/`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(answers),
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to fetch Score");
+            }
+
+            const result = await response.json();
+            setResults(result); // This will trigger a re-render
+            console.log(results);
+          } catch (error) {
+            console.error(error.message);
+          }
+        };
+        fetchScore(activeQuizId);
+      }
+    };
+
+    if (results) {
+      return renderResults(); // This will show the results view
     }
 
     const currentQuestion = quizData[currentQuestionIndex];
@@ -367,11 +391,15 @@ const CourseDetailPage = () => {
           </button>
           {currentQuestionIndex === quizData.length - 1 ? (
             <button
-              onClick={() => setQuizSubmitted(true)}
+              onClick={() => {
+                setQuizSubmitted(true);
+                handleQuizSubmit();
+              }}
               disabled={Object.keys(selectedAnswers).length !== quizData.length}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300"
             >
               Submit Quiz
+              {/* TODO */}
             </button>
           ) : (
             <button
@@ -488,7 +516,7 @@ const CourseDetailPage = () => {
     if (!courseData) return null;
 
     const { course } = courseData;
-    const progressPercentage = userProgress?.percent_complete || 0;
+    const progressPercentage = userProgress?.percent_complete || "0";
 
     return (
       <>

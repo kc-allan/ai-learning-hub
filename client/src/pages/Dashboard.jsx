@@ -78,12 +78,13 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <Header />
-      <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="container mx-auto max-w-7xl">
+        {/* Top Section: Profile and Enrolled Courses */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* User Profile and Quick Stats */}
-          <div className="md:col-span-1 bg-white rounded-lg shadow-md p-6">
+          <div className="lg:col-span-1 bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center mb-6">
               <img
                 src="/api/placeholder/100/100"
@@ -115,25 +116,25 @@ const Dashboard = () => {
 
             <div className="mt-6 grid grid-cols-3 gap-4 text-center">
               <div>
-                <Award className="mx-auto text-yellow-500" />
-                <span className="text-sm">12 Badges</span>
+                <Award className="mx-auto text-yellow-500 w-6 h-6" />
+                <span className="text-sm block mt-1">12 Badges</span>
               </div>
               <div>
-                <BookOpen className="mx-auto text-green-500" />
-                <span className="text-sm">
+                <BookOpen className="mx-auto text-green-500 w-6 h-6" />
+                <span className="text-sm block mt-1">
                   {userProgress?.length || 0}{" "}
-                  {userProgress?.length == 1 ? "Course" : "Courses"}
+                  {userProgress?.length === 1 ? "Course" : "Courses"}
                 </span>
               </div>
               <div>
-                <Activity className="mx-auto text-purple-500" />
-                <span className="text-sm">42h Learning</span>
+                <Activity className="mx-auto text-purple-500 w-6 h-6" />
+                <span className="text-sm block mt-1">42h Learning</span>
               </div>
             </div>
           </div>
 
-          {/* Learning Paths and Progress */}
-          <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
+          {/* Enrolled Courses */}
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold">Enrolled Courses</h3>
               <Link to="/courses" className="text-blue-500 hover:underline">
@@ -146,16 +147,20 @@ const Dashboard = () => {
                 {userProgress?.map((course) => (
                   <div
                     key={course.id}
-                    className="flex items-center bg-gray-100 p-4 rounded-lg cursor-pointer"
-                    onClick={() => navigate(`/course/${course.course_details.course_id}`)}
+                    className="flex items-center bg-gray-100 p-4 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors"
+                    onClick={() =>
+                      navigate(`/course/${course.course_details.course_id}`)
+                    }
                   >
-                    {course.icon}
-                    <div className="ml-4 flex-grow">
-                      <div className="flex justify-between">
-                        <span className="font-semibold">
+                    {course.icon && <div className="mr-4">{course.icon}</div>}
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold truncate max-w-[70%]">
                           {course.course_details.title}
                         </span>
-                        <span>{course.percent_complete}%</span>
+                        <span className="text-sm">
+                          {course.percent_complete}%
+                        </span>
                       </div>
                       <div className="w-full bg-gray-300 rounded-full h-2 mt-2">
                         <div
@@ -171,7 +176,7 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center py-8">
                 <svg
                   className="w-12 h-12 text-gray-400 mb-2"
                   fill="none"
@@ -179,100 +184,105 @@ const Dashboard = () => {
                   viewBox="0 0 24 24"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
                 <p className="text-lg font-medium">No enrolled courses yet</p>
                 <p className="text-sm text-gray-400 mt-1">
-                  Check out our latest&nbsp;
-                  <a href="/courses" className="text-blue-500 font-semibold">
+                  Check out our latest{" "}
+                  <Link to="/courses" className="text-blue-500 font-semibold">
                     courses
-                  </a>{" "}
+                  </Link>
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Recent Courses and Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-          <h3 className="text-xl font-bold mb-4">Recent Courses</h3>
-          {userProgress?.length == 0 ? (
-            <div className="flex flex-col justify-center items-center md:col-span-2 bg-white rounded-lg shadow-md p-6">
-              <svg
-                className="w-12 h-12 text-gray-400 mb-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
-              <p className="text-lg font-medium">Nothing here</p>
-              <p className="text-sm text-gray-400 mt-1">
-                You have not enrolled to any courses
-              </p>
-            </div>
-          ) : (
-            <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
-              {userProgress?.map((course) => (
-                <div
-                  key={course.id}
-                  className="flex justify-between items-center py-3 border-b"
+        {/* Bottom Section: Recent Courses and Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-bold mb-4">Recent Courses</h3>
+            {!userProgress || userProgress.length === 0 ? (
+              <div className="flex flex-col items-center py-8">
+                <svg
+                  className="w-12 h-12 text-gray-400 mb-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <div>
-                    <span className="font-semibold">
-                      {course.course_details.title}
-                    </span>
-                    <div className="text-sm text-gray-500">
-                      Last accessed:{" "}
-                      {format(
-                        new Date(course.last_accessed),
-                        "dd-MMM-yyyy HH:mm"
-                      )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+                <p className="text-lg font-medium">Nothing here</p>
+                <p className="text-sm text-gray-400 mt-1">
+                  You have not enrolled in any courses
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {userProgress?.map((course) => (
+                  <div
+                    key={course.id}
+                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-3 border-b last:border-b-0"
+                  >
+                    <div className="mb-2 sm:mb-0">
+                      <span className="font-semibold block">
+                        {course.course_details.title}
+                      </span>
+                      <div className="text-sm text-gray-500">
+                        Last accessed:{" "}
+                        {format(
+                          new Date(course.last_accessed),
+                          "dd-MMM-yyyy HH:mm"
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="mr-2 text-sm">
+                        {course.percent_complete}%
+                      </span>
+                      <div className="w-20 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-green-500 h-2 rounded-full"
+                          style={{ width: `${course.percent_complete}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center">
-                    <span className="mr-2">{course.percent_complete}%</span>
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-green-500 h-2 rounded-full"
-                        style={{ width: `${course.percent_complete}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
 
+          {/* Quick Actions */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-xl font-bold mb-4">Quick Actions</h3>
             <div className="space-y-3">
               <Link
                 to="/courses"
-                className="flex items-center bg-blue-50 p-3 rounded-lg hover:bg-blue-100"
+                className="flex items-center bg-blue-50 p-3 rounded-lg hover:bg-blue-100 transition-colors"
               >
                 <BookOpen className="mr-3 text-blue-500" />
                 New Course
               </Link>
               <Link
                 to="/community"
-                className="flex items-center bg-green-50 p-3 rounded-lg hover:bg-green-100"
+                className="flex items-center bg-green-50 p-3 rounded-lg hover:bg-green-100 transition-colors"
               >
                 <Home className="mr-3 text-green-500" />
                 Community Forum
               </Link>
               <Link
                 to="/progress"
-                className="flex items-center bg-purple-50 p-3 rounded-lg hover:bg-purple-100"
+                className="flex items-center bg-purple-50 p-3 rounded-lg hover:bg-purple-100 transition-colors"
               >
                 <Activity className="mr-3 text-purple-500" />
                 Performance
