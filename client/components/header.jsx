@@ -3,6 +3,7 @@ import { Layout, Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setLogout } from "../src/state";
+import UpgradeButton from "./upgradeButton";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ const Header = () => {
           >
             Log Out
           </button>
+          <UpgradeButton />
         </>
       ) : (
         <>

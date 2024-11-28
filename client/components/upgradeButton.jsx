@@ -1,5 +1,7 @@
-export default function UpgradeButton() {
-	const { mutate, isPending }= useCheckoutSessionCreate({
+import { useCheckout } from "@stripe/react-stripe-js";
+
+export function UpgradeButton() {
+	const { mutate, isPending }= useCheckout({
 	  mutation: {
 		onSuccess: (data) => {
 		  window.location.href = data.url;
