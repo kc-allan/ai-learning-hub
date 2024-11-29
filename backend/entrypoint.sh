@@ -11,6 +11,12 @@ python manage.py migrate
 echo "Running seeders..."
 python manage.py seed_courses
 
+echo "Creating admin user"
+python manage.py create_admin
+
+echo "seeding forums"
+python manage.py add_forums
+
 # Collect static files (for production)
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
