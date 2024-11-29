@@ -4,13 +4,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setLogout } from "../src/state";
 import PaymentPlanModal from "./paymentPlanModal";
+import { useMediaQuery } from "@mui/material";
 
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuth = useSelector((state) => state.token);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const isPremium = useSelector((state) => state.user?.is_premium)
+  const isPremium = useSelector((state) => state.user?.is_premium);
+  const isNonMobileScreens = useMediaQuery("(min-width: 700px)");
 
   const handleLogout = () => {
     dispatch(setLogout());
@@ -87,32 +89,38 @@ const Header = () => {
           </span>
         </Link>
 
-        {/* Mobile Menu Toggle */}
-        <button className="md:hidden z-60" onClick={toggleMobileMenu}>
-          {isMobileMenuOpen ? (
-            <X className="h-6 w-6 text-gray-800" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
-        </button>
-
-        {/* Desktop Navigation */}
-        <nav className="flex items-center space-x-4">
-          <NavLinks />
-        </nav>
-
-        {/* Mobile Navigation Overlay */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden space-y-6 fixed inset-0 bg-white top-16 left-0 right-0 bottom-0 z-50 flex flex-col gap-4 p-4 overflow-y-auto">
-            <div className="absolute top-4 right-4 z-60 flex items-center justify-center">
-              <button onClick={toggleMobileMenu} className="text-gray-800">
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div className="p-4 text-center space-y-2 bg-white z-70">
+        {isNonMobileScreens ? (
+          <>
+            {/* Desktop Navigation */}
+            <nav className="flex items-center space-x-4">
               <NavLinks />
-            </div>
-          </div>
+            </nav>
+          </>
+        ) : (
+          <>
+            {/* Mobile Menu Toggle */}
+            <button className="md:hidden z-60" onClick={toggleMobileMenu}>
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6 text-gray-800" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+
+            {/* Mobile Navigation Overlay */}
+            {isMobileMenuOpen && (
+              <div className="md:hidden space-y-6 fixed inset-0 bg-white top-16 left-0 right-0 bottom-0 z-50 flex flex-col gap-4 p-4 overflow-y-auto">
+                <div className="absolute top-4 right-4 z-60 flex items-center justify-center">
+                  <button onClick={toggleMobileMenu} className="text-gray-800">
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <div className="p-4 text-center space-y-2 bg-white z-70">
+                  <NavLinks />
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </header>

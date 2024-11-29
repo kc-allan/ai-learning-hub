@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -21,10 +21,10 @@ ENV PYTHONUNBUFFERED=1
 
 # Adjust these paths accordingly
 COPY backend/entrypoint.sh /app/entrypoint.sh
-COPY backend/crontab /etc/cron.d/fetch_ai_news_cron
+COPY backend/jobs.cron /etc/cron.d/fetch_ai_news_cron
 RUN chmod +x /app/entrypoint.sh
 
 # Apply the cron job
-RUN crontab /etc/cron.d/jobs.cron
+RUN jobs.cron /etc/cron.d/jobs.cron
 
 CMD ["/app/entrypoint.sh"]
