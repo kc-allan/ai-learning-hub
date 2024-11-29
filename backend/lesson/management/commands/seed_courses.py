@@ -9,6 +9,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Seed Courses
+        if Course.objects.exists():
+            self.stdout.write(self.style.SUCCESS('Skipping Seeding because courses are available already...'))
+            return
         self.stdout.write(self.style.SUCCESS('Seeding Courses...'))
         courses = [
             {
