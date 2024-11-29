@@ -1,16 +1,19 @@
-version: '3.9'
+version: '3.8'
 
 services:
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: "postgresql://ai-db_owner:pDSKWljYuy39@ep-restless-sea-a5l3f205.us-east-2.aws.neon.tech/ai-db?sslmode=require"
+    depends_on:
+      - client
     volumes:
-      - ./backend:/app
-    env_file:
-      - ./backend/.env
+      - .:/app
+    command: ["/app/entrypoint.sh"]
 
   client:
     build:
@@ -20,5 +23,4 @@ services:
       - "5173:5173"
     volumes:
       - ./client:/app
-    stdin_open: true
-    tty: true
+    command: ["npm", "run", "dev", "--", "--host"]
