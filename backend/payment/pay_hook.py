@@ -82,6 +82,7 @@ class StripeWebhookView(APIView):
             transaction.save()
 
     def handle_subscription_update(self, subscription):
+        print('subscription is: ',)
         stripe_customer_id = subscription.get("customer")
         current_period_end = subscription.get("current_period_end")
 

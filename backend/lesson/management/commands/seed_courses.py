@@ -1,10 +1,7 @@
-# your_app/management/commands/seed_db.py
-
+"""populate courses"""
 from django.core.management.base import BaseCommand
-from lesson.models import Course, Module, Quiz, Question, AnswerOption, UserCourseProgress, \
-    UserModuleProgress, UserQuizAttempt, UserQuizResponse, Assignment, AssignmentSubmission
+from lesson.models import Course, Module, Quiz, Question, AnswerOption, Assignment
 from django.utils.timezone import now
-import random
 
 
 class Command(BaseCommand):
@@ -49,7 +46,43 @@ class Command(BaseCommand):
                 'is_premium': False,
                 'level': 'beginner'
             },
+            {
+                'title': 'Computer Vision with AI',
+                'thumbnail': 'https://via.placeholder.com/150',
+                'description': 'Learn how AI is used to process and understand images.',
+                'is_premium': True,
+                'level': 'intermediate'
+            },
+            {
+                'title': 'Natural Language Processing',
+                'thumbnail': 'https://via.placeholder.com/150',
+                'description': 'Learn about processing and analyzing human language using AI.',
+                'is_premium': False,
+                'level': 'intermediate'
+            },
+            {
+                'title': 'Reinforcement Learning',
+                'thumbnail': 'https://via.placeholder.com/150',
+                'description': 'Study the basics of reinforcement learning algorithms.',
+                'is_premium': True,
+                'level': 'expert'
+            },
+            {
+                'title': 'AI in Healthcare',
+                'thumbnail': 'https://via.placeholder.com/150',
+                'description': 'Explore how AI is revolutionizing the healthcare industry.',
+                'is_premium': False,
+                'level': 'intermediate'
+            },
+            {
+                'title': 'AI in Robotics',
+                'thumbnail': 'https://via.placeholder.com/150',
+                'description': 'Learn how AI and robotics intersect to build intelligent machines.',
+                'is_premium': True,
+                'level': 'expert'
+            }
         ]
+
         course_objects = []
         for course_data in courses:
             course = Course.objects.create(**course_data)
