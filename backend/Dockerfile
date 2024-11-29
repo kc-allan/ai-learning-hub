@@ -19,14 +19,9 @@ EXPOSE 8000
 
 ENV PYTHONUNBUFFERED=1
 
-<<<<<<< HEAD
 # Adjust these paths accordingly
 COPY backend/entrypoint.sh /app/entrypoint.sh
 COPY backend/crontab /etc/cron.d/fetch_ai_news_cron
-=======
-COPY ./entrypoint.sh /app/entrypoint.sh
-COPY ./jobs.cron /etc/cron.d/jobs.cron
->>>>>>> refs/remotes/origin/main
 RUN chmod +x /app/entrypoint.sh
 
 # Apply the cron job
