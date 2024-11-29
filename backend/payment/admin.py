@@ -37,10 +37,10 @@ class PaymentPlansAdmin(admin.ModelAdmin):
 
                 # Create a recurring price for the subscription plan
                 price = stripe.Price.create(
-                    unit_amount=int(obj.price * 100),  # Convert price to cents
+                    unit_amount=int(obj.price * 100),
                     currency="usd",
-                    product=obj.stripe_product_id,  # Use the product ID created above
-                    recurring={"interval": "month"},  # Set recurring interval (e.g., monthly)
+                    product=obj.stripe_product_id,
+                    recurring={"interval": "month"},
                 )
                 obj.stripe_price_id = price.id
 
