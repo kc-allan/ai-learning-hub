@@ -17,18 +17,19 @@ import {
   Alert,
 } from "@mui/material";
 import { Check, Star, ErrorOutline } from "@mui/icons-material";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { setLogout } from "../src/state";
+import { useNavigate } from "react-router-dom";
 
-const PaymentPlanModal = ({text, icon}) => {
+const PaymentPlanModal = ({ text }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [plans, setPlans] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const token = useSelector((state) => state.token);
   const dispatch = useDispatch();
+  const token = useSelector((state) => state.token);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -37,22 +38,19 @@ const PaymentPlanModal = ({text, icon}) => {
         setError(null);
         try {
           const response = await fetch("/api/v1/payment/plans/", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            Authorization: `Bearer ${token}`,
           });
-          
+
           if (response.status === 401) {
-            dispatch(setLogout());
-            return;
+            return dispatch(setLogout());
           }
-          
+
           if (!response.ok) {
             // Improved error handling to capture more detailed error information
-            const errorText = await response.text();
-            throw new Error(`Failed to fetch plans: ${errorText || response.statusText}`);
+            const errorData = await response.json();
+            throw new Error(errorData.message);
           }
-          
+
           const plansData = await response.json();
           setPlans(plansData);
         } catch (err) {
@@ -84,17 +82,17 @@ const PaymentPlanModal = ({text, icon}) => {
           },
           body: JSON.stringify({ plan_id: selectedPlan.id }),
         });
-        
+
         if (response.status === 401) {
           dispatch(setLogout());
           return;
         }
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Payment checkout failed");
         }
-        
+
         const paymentLink = await response.json();
         window.location.href = paymentLink.url; // Use window.location instead of navigate
       } catch (err) {
@@ -109,7 +107,11 @@ const PaymentPlanModal = ({text, icon}) => {
   return (
     <div>
       <Button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          {
+            token ? setIsOpen(true) : navigate("/auth/login");
+          }
+        }}
         startIcon={<Star />}
         color="primary"
         variant="default"
@@ -134,18 +136,16 @@ const PaymentPlanModal = ({text, icon}) => {
         fullWidth
       >
         <DialogTitle>Select Your Payment Plan</DialogTitle>
-        
+
         {/* Prominent Error Display at the Top */}
         {error && (
           <Box sx={{ px: 3, pt: 2 }}>
-            <Alert 
-              severity="error" 
+            <Alert
+              severity="error"
               icon={<ErrorOutline />}
-              sx={{ width: '100%', mb: 2 }}
+              sx={{ width: "100%", mb: 2 }}
             >
-              <Typography variant="body1">
-                {error}
-              </Typography>
+              <Typography variant="body1">{error}</Typography>
             </Alert>
           </Box>
         )}
@@ -275,7 +275,7 @@ const PaymentPlanModal = ({text, icon}) => {
             variant="contained"
             disabled={!selectedPlan || isLoading}
           >
-            {isLoading ? 'Processing...' : 'Confirm Selection'}
+            {isLoading ? "Processing..." : "Confirm Selection"}
           </Button>
         </DialogActions>
       </Dialog>

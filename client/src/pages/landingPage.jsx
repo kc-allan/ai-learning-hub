@@ -18,9 +18,12 @@ import {
   Box,
   Chip,
 } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { setLogout } from "../state";
 
 import Header from "../../components/header";
 import Footer from "../../components/footer";
+import PaymentPlanModal from "../../components/paymentPlanModal";
 
 const FeatureCard = ({ icon, title, description }) => (
   <Card className="group hover:shadow-lg transition-all duration-300">
@@ -36,7 +39,13 @@ const FeatureCard = ({ icon, title, description }) => (
   </Card>
 );
 
-const PricingCard = ({ title, price, features, duration, featured = false }) => (
+const PricingCard = ({
+  title,
+  price,
+  features,
+  duration,
+  featured = false,
+}) => (
   <Card
     className={`group hover:shadow-lg transition-all duration-300 ${
       featured ? "border-2 border-blue-500" : ""
@@ -48,24 +57,18 @@ const PricingCard = ({ title, price, features, duration, featured = false }) => 
         <span className="text-3xl font-bold">${price}</span>
         <span className="text-gray-600">/{duration}</span>
       </div>
-      <ul className="space-y-2">
+      <div>{features}</div>
+      {/* <ul className="space-y-2">
         {features.map((feature, index) => (
           <li key={index} className="flex items-center text-gray-600">
             <Brain className="h-4 w-4 mr-2 text-blue-500" />
             {feature}
           </li>
         ))}
-      </ul>
-      <button
-        className={`w-full mt-6 px-4 py-2 rounded-lg font-medium transition-colors
-          ${
-            featured
-              ? "bg-blue-500 hover:bg-blue-600 text-white"
-              : "bg-gray-100 hover:bg-gray-200 text-gray-800"
-          }`}
-      >
-        Get Started
-      </button>
+      </ul> */}
+      <div className="py-2">
+        <PaymentPlanModal text={"Get Started"} />
+      </div>
     </CardContent>
   </Card>
 );
@@ -73,17 +76,21 @@ const PricingCard = ({ title, price, features, duration, featured = false }) => 
 const LandingPage = () => {
   const [plans, setPlans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
         const response = await fetch("/api/v1/payment/plans");
+        if (response.status === 401) {
+          return disptach(setLogout());
+        }
         if (!response.ok) {
           throw new Error("Failed to fetch plans");
         }
         const data = await response.json();
         console.log(data);
-        
+
         setPlans(data || []); // Assume the API returns `plans` array
       } catch (error) {
         console.error("Error fetching plans:", error);

@@ -242,10 +242,10 @@ const ForumPage = () => {
                   <Button
                     key={forum.id}
                     fullWidth
-                    variant={forum.id === currentForum?.id ? "contained" : "outlined"}
+                    variant={forum.id === currentForum?.id ? "contained" : "default"}
                     onClick={() => setCurrentForum(forum)}
                   >
-                    <MessageSquare className="mr-2 h-5 w-5" />
+                    {/* <MessageSquare className="mr-2 h-5 w-5" /> */}
                     {forum.title}
                   </Button>
                 ))}

@@ -218,7 +218,7 @@ const CourseDetailPage = () => {
               )}
             </div>
             <h3 className="text-2xl font-bold mb-2">Quiz Complete!</h3>
-            <p className="text-gray-600">Your score: {score}%</p>
+            <p className="text-gray-600">Your score: {Number(score)} / {quizData?.length} - <span className="font-bold" >{Number(score) / quizData?.length * 100}%</span> </p>
           </div>
   
           {/* Questions and Answers */}
