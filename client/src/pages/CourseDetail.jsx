@@ -191,24 +191,16 @@ const CourseDetailPage = () => {
   };
 
   const renderQuizContent = () => {
-    let answers = {
-      answers: [],
-    };
-
-    Object.entries(selectedAnswers).forEach(([key, value]) => {
-      answers.answers.push({
-        question_id: key,
-        selected_option_id: value,
-      });
-    });
-
+    if (!quizData) return null;
+  
+    // Helper function to render results
     const renderResults = () => {
       if (!results) {
         return <div>Loading your quiz results...</div>;
       }
-
+  
       const score = results.attempt?.total_score || 0;
-
+  
       return (
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="text-center mb-6">
@@ -228,15 +220,21 @@ const CourseDetailPage = () => {
             <h3 className="text-2xl font-bold mb-2">Quiz Complete!</h3>
             <p className="text-gray-600">Your score: {score}%</p>
           </div>
-
+  
+          {/* Questions and Answers */}
           <div className="space-y-6">
             {quizData.map((question, index) => {
+              // console.log(selectedAnswers);
+              // console.log(question.id);
+              // console.log(results);
+              
               const isCorrect =
-                selectedAnswers[question.id] ===
                 results.attempt.responses.find(
                   (res) => res.question_id === question.id
                 )?.is_correct;
-
+                console.log(question.question_options);
+                
+  
               return (
                 <div
                   key={question.id}
@@ -254,18 +252,18 @@ const CourseDetailPage = () => {
                       <div
                         key={answer.id}
                         className={`flex items-center ${
-                          answer.id === question.correct_answer_id
+                          answer.is_correct
                             ? "text-green-700"
                             : answer.id === selectedAnswers[question.id]
                             ? "text-red-700"
                             : "text-gray-600"
                         }`}
                       >
-                        {answer.id === question.correct_answer_id && (
+                        {answer.is_correct && (
                           <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
                         )}
                         {answer.id === selectedAnswers[question.id] &&
-                          answer.id !== question.correct_answer_id && (
+                          !answer.is_correct && (
                             <XCircle className="w-4 h-4 mr-2 text-red-600" />
                           )}
                         <span>{answer.text}</span>
@@ -276,12 +274,14 @@ const CourseDetailPage = () => {
               );
             })}
           </div>
-
+  
+          {/* Retry and Close Buttons */}
           <div className="mt-6 flex justify-end space-x-3">
             <button
               onClick={() => {
                 setQuizData(null);
                 setActiveQuizId(null);
+                setResults(null); // Reset results
               }}
               className="px-4 py-2 text-gray-600 hover:text-gray-800"
             >
@@ -292,6 +292,7 @@ const CourseDetailPage = () => {
                 setCurrentQuestionIndex(0);
                 setSelectedAnswers({});
                 setQuizSubmitted(false);
+                setResults(null); // Reset results to retry
               }}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
             >
@@ -301,42 +302,43 @@ const CourseDetailPage = () => {
         </div>
       );
     };
-
-    if (!quizData) return null;
-    const handleQuizSubmit = () => {
-      if (quizSubmitted) {
-        const fetchScore = async (quizId) => {
-          try {
-            const response = await fetch(`/api/v1/quiz/${quizId}/submit/`, {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(answers),
-            });
-
-            if (!response.ok) {
-              throw new Error("Failed to fetch Score");
-            }
-
-            const result = await response.json();
-            setResults(result); // This will trigger a re-render
-            console.log(results);
-          } catch (error) {
-            console.error(error.message);
-          }
-        };
-        fetchScore(activeQuizId);
+  
+    // Handle quiz submission
+    const handleQuizSubmit = async () => {
+      if (quizSubmitted) return; // Avoid multiple submissions
+  
+      setQuizSubmitted(true);
+  
+      try {
+        const response = await fetch(`/api/v1/quiz/${activeQuizId}/submit/`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            answers: Object.entries(selectedAnswers).map(([questionId, answerId]) => ({
+              question_id: questionId,
+              selected_option_id: answerId,
+            })),
+          }),
+        });
+  
+        if (!response.ok) throw new Error("Failed to submit quiz");
+  
+        const resultData = await response.json();
+        setResults(resultData);
+      } catch (error) {
+        console.error("Error submitting quiz:", error);
       }
     };
-
-    if (results) {
-      return renderResults(); // This will show the results view
-    }
-
+  
+    // If results exist, render results
+    if (results) return renderResults();
+  
     const currentQuestion = quizData[currentQuestionIndex];
-
+  
+    // Render current question
     return (
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <div className="flex justify-between items-center mb-6">
@@ -344,11 +346,10 @@ const CourseDetailPage = () => {
             Question {currentQuestionIndex + 1} of {quizData.length}
           </h3>
           <div className="text-sm text-gray-600">
-            {Math.round((currentQuestionIndex / quizData.length) * 100)}%
-            Complete
+            {Math.round((currentQuestionIndex / quizData.length) * 100)}% Complete
           </div>
         </div>
-
+  
         <div className="mb-8">
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
@@ -359,7 +360,7 @@ const CourseDetailPage = () => {
             />
           </div>
         </div>
-
+  
         <div className="mb-6">
           <p className="text-lg font-medium mb-4">{currentQuestion.text}</p>
           <div className="space-y-3">
@@ -380,40 +381,37 @@ const CourseDetailPage = () => {
             ))}
           </div>
         </div>
-
-        <div className="flex justify-between">
+  
+        <div className="flex justify-end space-x-3">
           <button
-            onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
+            onClick={() => {
+              if (currentQuestionIndex > 0) setCurrentQuestionIndex((prev) => prev - 1);
+            }}
             disabled={currentQuestionIndex === 0}
-            className="px-4 py-2 text-gray-600 disabled:text-gray-400"
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
           >
             Previous
           </button>
-          {currentQuestionIndex === quizData.length - 1 ? (
+          {currentQuestionIndex < quizData.length - 1 ? (
             <button
-              onClick={() => {
-                setQuizSubmitted(true);
-                handleQuizSubmit();
-              }}
-              disabled={Object.keys(selectedAnswers).length !== quizData.length}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300"
+              onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
             >
-              Submit Quiz
-              {/* TODO */}
+              Next
             </button>
           ) : (
             <button
-              onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
-              disabled={!selectedAnswers[currentQuestion.id]}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300"
+              onClick={handleQuizSubmit}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
             >
-              Next Question
+              Submit Quiz
             </button>
           )}
         </div>
       </div>
     );
   };
+  
 
   const renderModuleContent = () => {
     if (!selectedModule) return null;

@@ -7,6 +7,7 @@ import {
   Newspaper,
   Send,
   MessageCircle,
+  Lock
 } from "lucide-react";
 import {
   Card,
@@ -26,6 +27,7 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/header";
+import PaymentPlanModal from "../../components/paymentPlanModal";
 
 import { timeElapsed } from "../../utils";
 import { setLogout } from "../state";
@@ -46,6 +48,7 @@ const ForumPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [mobileTab, setMobileTab] = useState(0);
+  const isPremium = useSelector((state) => state.user?.is_premium)
 
   useEffect(() => {
     fetchForums();
@@ -206,8 +209,7 @@ const ForumPage = () => {
             {error}
           </Alert>
         )}
-
-        {/* Mobile Tabs - Only visible on smaller screens */}
+  
         <Box
           sx={{
             display: { xs: "block", lg: "none" },
@@ -225,18 +227,9 @@ const ForumPage = () => {
             <Tab icon={<Newspaper />} label="News" />
           </Tabs>
         </Box>
-
+  
         <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
-          {/* Forums Sidebar - Hidden on mobile when News tab is active */}
-          <div
-            className={`
-              space-y-4 
-              lg:col-span-1 
-              overflow-y-auto 
-              max-h-screen 
-              ${mobileTab === 0 || "hidden lg:block"}
-            `}
-          >
+          <div className={`space-y-4 lg:col-span-1 overflow-y-auto max-h-screen ${mobileTab === 0 || "hidden lg:block"}`}>
             <Card className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <Typography variant="h6">Forums</Typography>
@@ -249,9 +242,7 @@ const ForumPage = () => {
                   <Button
                     key={forum.id}
                     fullWidth
-                    variant={
-                      forum.id === currentForum?.id ? "contained" : "outlined"
-                    }
+                    variant={forum.id === currentForum?.id ? "contained" : "outlined"}
                     onClick={() => setCurrentForum(forum)}
                   >
                     <MessageSquare className="mr-2 h-5 w-5" />
@@ -261,67 +252,48 @@ const ForumPage = () => {
               </div>
             </Card>
           </div>
-
-          {/* Threads Content - Hidden on mobile when News tab is active */}
-          <div
-            className={`
-              lg:col-span-3 
-              space-y-4 
-              lg:overflow-y-auto 
-              lg:h-screen 
-              ${mobileTab === 0 || "hidden lg:block"}
-            `}
-          >
+  
+          <div className={`lg:col-span-3 space-y-4 lg:overflow-y-auto lg:h-screen ${mobileTab === 0 || "hidden lg:block"}`}>
             {currentForum && (
               <Card className="p-4">
                 <div className="flex justify-between items-center mb-4">
-                  <Typography variant="h5">
-                    {currentForum.title} Threads
-                  </Typography>
-                  <Button
-                    variant="default"
-                    onClick={() => setIsCreatingThread(true)}
-                    className="bg-blue-500 hover:bg-blue-600 flex items-center justify-center"
-                  >
-                    <PlusCircle className="h-5 w-5 md:mr-2" />
-                    <span className="hidden md:inline">New Thread</span>
-                  </Button>
+                  <Typography variant="h5">{currentForum.title} Threads</Typography>
+                  {isPremium ? (
+                    <Button
+                      variant="default"
+                      onClick={() => setIsCreatingThread(true)}
+                      className="bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white"
+                    >
+                      <PlusCircle className="h-5 w-5 md:mr-2" />
+                      <span className="hidden md:inline">New Thread</span>
+                    </Button>
+                  ) : (
+                    <div className="flex items-center space-x-2 bg-yellow-50 border border-yellow-200 rounded-md p-2">
+                      <Lock className="h-5 w-5 text-yellow-600" />
+                      <Typography className="text-sm text-yellow-700">
+                        Upgrade to  Premium to Create Threads
+                      </Typography>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-4">
                   {threads.length === 0 ? (
-                    <Typography>
-                      No threads yet. Be the first to post!
+                    <Typography className="text-center text-gray-500 italic">
+                      No threads yet. {isPremium ? "Be the first to post!" : "Premium users can start a thread."}
                     </Typography>
                   ) : (
                     threads.map((thread) => (
-                      <Card
-                        key={thread.id}
-                        className="p-4 hover:shadow-md space-y-4"
-                      >
+                      <Card key={thread.id} className="p-4 hover:shadow-md space-y-4">
                         <div className="bg-gray-100 p-2 pb-4 rounded-sm">
-                          <Typography
-                            variant="subtitle1"
-                            className="flex items-center gap-2"
-                          >
-                            <h1 className="font-bold text-black">
-                              {thread.title}
-                            </h1>
-                            <span className="text-xs text-gray-500">
-                              {timeElapsed(thread.created_at)}
-                            </span>
+                          <Typography variant="subtitle1" className="flex items-center gap-2">
+                            <h1 className="font-bold text-black">{thread.title}</h1>
+                            <span className="text-xs text-gray-500">{timeElapsed(thread.created_at)}</span>
                           </Typography>
-                          <Typography
-                            variant="body2"
-                            className="text-gray-600"
-                            sx={{
-                              marginTop: "8px",
-                            }}
-                          >
+                          <Typography variant="body2" className="text-gray-600" sx={{ marginTop: "8px" }}>
                             {thread.content}
                           </Typography>
                         </div>
-
-                        {/* Replies Section */}
+  
                         <div>
                           <Button
                             variant="text"
@@ -330,68 +302,60 @@ const ForumPage = () => {
                           >
                             {thread.replies?.length || 0} Replies
                           </Button>
-
+  
                           <Collapse in={expandedThreads[thread.id]}>
                             <div className="space-y-2 bg-gray-100 p-3 rounded-lg max-h-[500px] overflow-y-auto">
                               {thread.replies?.length === 0 ? (
-                                <Typography
-                                  variant="body2"
-                                  className="text-gray-500"
-                                >
+                                <Typography variant="body2" className="text-gray-500 text-center italic">
                                   No replies yet
                                 </Typography>
                               ) : (
                                 thread.replies?.map((reply) => (
-                                  <div
-                                    key={reply.id}
-                                    className="bg-white p-2 rounded-md shadow-sm"
-                                  >
-                                    <Typography
-                                      variant="body2"
-                                      className="text-gray-800"
-                                    >
-                                      <span className="font-bold">
-                                        {reply.written_by}
-                                      </span>{" "}
-                                      <span>
-                                        {reply?.written_by ===
-                                          currentUser.username && "(You)"}
-                                      </span>
+                                  <div key={reply.id} className="bg-white p-2 rounded-md shadow-sm">
+                                    <Typography variant="body2" className="text-gray-800">
+                                      <span className="font-bold">{reply.written_by}</span>
+                                      <span>{reply?.written_by === currentUser.username && "(You)"}</span>
                                       : {reply.content}
                                     </Typography>
                                     <span className="text-xs text-gray-500">
-                                      {format(
-                                        new Date(reply.created_at),
-                                        "dd MMM yyyy • HH:mm"
-                                      )}
+                                      {format(new Date(reply.created_at), "dd MMM yyyy • HH:mm")}
                                     </span>
                                   </div>
                                 ))
                               )}
                             </div>
-                            {/* Reply Input */}
-                            <div className="flex items-center gap-2 mt-4">
-                              <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Write a reply..."
-                                value={newReplies[thread.id] || ""}
-                                onChange={(e) =>
-                                  setNewReplies((prev) => ({
-                                    ...prev,
-                                    [thread.id]: e.target.value,
-                                  }))
-                                }
-                              />
-                              <Button
-                                size="small"
-                                variant="contained"
-                                onClick={() => postReply(thread.id)}
-                                startIcon={<Send />}
-                              >
-                                Send
-                              </Button>
-                            </div>
+                            {isPremium ? (
+                              <div className="flex items-center gap-2 mt-4">
+                                <TextField
+                                  fullWidth
+                                  size="small"
+                                  placeholder="Write a reply..."
+                                  value={newReplies[thread.id] || ""}
+                                  onChange={(e) =>
+                                    setNewReplies((prev) => ({
+                                      ...prev,
+                                      [thread.id]: e.target.value,
+                                    }))
+                                  }
+                                />
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  onClick={() => postReply(thread.id)}
+                                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                                  startIcon={<Send />}
+                                >
+                                  Send
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center space-x-2 bg-yellow-50 border border-yellow-200 rounded-md p-2 mt-4">
+                                <Lock className="h-5 w-5 text-yellow-600" />
+                                <Typography className="text-sm text-yellow-700">
+                                  Upgrade to Premium to Reply
+                                </Typography>
+                              </div>
+                            )}
                           </Collapse>
                         </div>
                       </Card>
@@ -401,8 +365,7 @@ const ForumPage = () => {
               </Card>
             )}
           </div>
-
-          {/* News Sidebar - Responsive rendering */}
+  
           <div
             className={`
               lg:col-span-2 
@@ -452,44 +415,8 @@ const ForumPage = () => {
               </div>
             </Card>
           </div>
-        </div>
 
-        {/* New Thread Dialog */}
-        <Dialog
-          open={isCreatingThread}
-          onClose={() => setIsCreatingThread(false)}
-          fullWidth
-        >
-          <DialogTitle>Create New Thread</DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Title"
-              fullWidth
-              margin="normal"
-              value={newThread.title}
-              onChange={(e) =>
-                setNewThread({ ...newThread, title: e.target.value })
-              }
-            />
-            <TextField
-              label="Content"
-              fullWidth
-              margin="normal"
-              multiline
-              rows={4}
-              value={newThread.content}
-              onChange={(e) =>
-                setNewThread({ ...newThread, content: e.target.value })
-              }
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsCreatingThread(false)}>Cancel</Button>
-            <Button variant="contained" onClick={createThread}>
-              Create
-            </Button>
-          </DialogActions>
-        </Dialog>
+        </div>
       </main>
     </div>
   );

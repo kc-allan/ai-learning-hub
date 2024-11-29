@@ -3,13 +3,14 @@ import { Layout, Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setLogout } from "../src/state";
-import UpgradeButton from "./upgradeButton";
+import PaymentPlanModal from "./paymentPlanModal";
 
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuth = useSelector((state) => state.token);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isPremium = useSelector((state) => state.user?.is_premium)
 
   const handleLogout = () => {
     dispatch(setLogout());
@@ -25,6 +26,7 @@ const Header = () => {
     <>
       {isAuth ? (
         <>
+          {!isPremium && <PaymentPlanModal />}
           <Link
             to="/dashboard"
             className="block px-4 py-2 text-gray-600 hover:text-gray-900 md:inline-block"
@@ -52,7 +54,6 @@ const Header = () => {
           >
             Log Out
           </button>
-          <UpgradeButton />
         </>
       ) : (
         <>
@@ -65,7 +66,7 @@ const Header = () => {
           </Link>
           <Link
             to="/auth/register"
-            className="block px-4 py-2 bg-gray-500 text-gray-600 rounded-lg hover:bg-gray-600 md:inline-block"
+            className="block px-4 py-2 text-gray-600 hover:text-gray-900 md:inline-block"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Sign Up
@@ -102,14 +103,13 @@ const Header = () => {
 
         {/* Mobile Navigation Overlay */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 bg-white z-50 flex flex-col p-4 space-y-4 md:hidden">
-            <button
-              onClick={toggleMobileMenu}
-              className="self-end text-gray-800"
-            >
-              <X className="h-6 w-6" />
-            </button>
-            <div className="mt-4 space-y-2 text-center">
+          <div className="md:hidden space-y-6 fixed inset-0 bg-white top-16 left-0 right-0 bottom-0 z-50 flex flex-col gap-4 p-4 overflow-y-auto">
+            <div className="absolute top-4 right-4 z-60 flex items-center justify-center">
+              <button onClick={toggleMobileMenu} className="text-gray-800">
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-4 text-center space-y-2 bg-white z-70">
               <NavLinks />
             </div>
           </div>

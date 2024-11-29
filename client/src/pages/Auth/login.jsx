@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../../components/header";
 import Footer from "../../../components/footer";
 import { setLogin, setCurrentUser } from "../../state";
+import { useSelector } from "react-redux";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -22,7 +23,8 @@ const LoginPage = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const token = useSelector((state) => state.token)
 
   const fetchUserData = async (token) => {
     try {

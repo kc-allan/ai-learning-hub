@@ -14,6 +14,7 @@ import Header from "../../components/header";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { setLogout } from "../state";
+import PaymentPlanModal from "../../components/paymentPlanModal";
 
 const CourseCard = ({ course, onClick }) => {
   // console.log(course)
@@ -174,6 +175,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const token = useSelector((state) => state.token);
+  const isPremium = useSelector((state) => state.user?.is_premium);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -253,8 +255,8 @@ const HomePage = () => {
   });
 
   const enrolledCourses = userProgress?.map((course) => {
-    return course.course_details.course_id
-  })
+    return course.course_details.course_id;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -355,33 +357,44 @@ const HomePage = () => {
               )}
             </div>
 
-            {enrolledCourses.includes(selectedCourse.id) ? (
-              <div>
-                <button
-                  className="flex-1 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                  onClick={() => {
-                    navigate(`/course/${selectedCourse.id}`);
-                  }}
-                >
-                  View
-                </button>
-              </div>
+            {(selectedCourse.is_premium && isPremium) ||
+            !selectedCourse.is_premium ? (
+              <>
+                {enrolledCourses.includes(selectedCourse.id) ? (
+                  <div>
+                    <button
+                      className="flex-1 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                      onClick={() => {
+                        navigate(`/course/${selectedCourse.id}`);
+                      }}
+                    >
+                      View
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-4">
+                    <button
+                      className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                      onClick={() => {
+                        navigate(`/course/${selectedCourse.id}`);
+                      }}
+                    >
+                      Enroll Now
+                    </button>
+                    <button
+                      className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                      onClick={() => setSelectedCourse(null)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="flex gap-4">
-                <button
-                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                  onClick={() => {
-                    navigate(`/course/${selectedCourse.id}`);
-                  }}
-                >
-                  Enroll Now
-                </button>
-                <button
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
-                  onClick={() => setSelectedCourse(null)}
-                >
-                  Close
-                </button>
+              <div className="w-full flex justify-center items-center">
+                <PaymentPlanModal
+                  text={"Upgrade to Premium to access this course"}
+                />
               </div>
             )}
           </div>

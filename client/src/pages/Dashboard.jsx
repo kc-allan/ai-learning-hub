@@ -87,7 +87,7 @@ const Dashboard = () => {
           <div className="lg:col-span-1 bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center mb-6">
               <img
-                src="/api/placeholder/100/100"
+                src="https://via.placeholder.com/150"
                 alt="Profile"
                 className="w-16 h-16 rounded-full mr-4"
               />
