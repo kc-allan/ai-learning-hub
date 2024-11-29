@@ -3,8 +3,8 @@ version: '3.8'
 services:
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ./  # Use project root
+      dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -12,12 +12,12 @@ services:
     depends_on:
       - client
     volumes:
-      - .:/app
+      - ./backend:/app  # Map only the backend directory
     command: ["/app/entrypoint.sh"]
 
   client:
     build:
-      context: .
+      context: ./  # Use project root
       dockerfile: client/Dockerfile
     ports:
       - "5173:5173"
