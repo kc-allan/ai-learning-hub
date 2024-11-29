@@ -59,6 +59,7 @@ class StripeWebhookView(APIView):
 
         user = customer.user
         user.is_premium = True
+        user.premium_expiry = timezone.make_aware(datetime.fromtimestamp(stripe_subscription.current_period_end))
         user.save()
 
         PaymentTransaction.objects.create(

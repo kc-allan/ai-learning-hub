@@ -21,10 +21,10 @@ EXPOSE 8000
 ENV PYTHONUNBUFFERED=1
 
 COPY ./entrypoint.sh /app/entrypoint.sh
-COPY ./crontab /etc/cron.d/fetch_ai_news_cron
+COPY ./jobs.cron /etc/cron.d/jobs.cron
 RUN chmod +x /app/entrypoint.sh
 
 # Apply the cron job
-RUN crontab /etc/cron.d/fetch_ai_news_cron
+RUN crontab /etc/cron.d/jobs.cron
 
 CMD ["/app/entrypoint.sh"]
