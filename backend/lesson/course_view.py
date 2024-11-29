@@ -3,7 +3,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .models import Course, Module, Quiz
 from django.shortcuts import get_object_or_404
-from .serializers import CourseSerializer, ModuleSerializer, QuestionSerializer, ModuleDetailedSerializer
+from .serializers import CourseSerializer, QuestionSerializer, ModuleDetailedSerializer
 from rest_framework.filters import SearchFilter, OrderingFilter
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
