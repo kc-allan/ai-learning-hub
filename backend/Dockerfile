@@ -2,29 +2,36 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# Install necessary packages
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
     cron \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Change this line to use the full path from the context
-COPY backend/requirements.txt .
+# Install Python dependencies
+COPY backend/requirements.txt . 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire backend directory
+# Copy application code
 COPY backend/ .
 
-EXPOSE 8000
-
+# Set environment variable to prevent Python from buffering output
 ENV PYTHONUNBUFFERED=1
 
-# Adjust these paths accordingly
+# Copy the entrypoint script and cron jobs
 COPY backend/entrypoint.sh /app/entrypoint.sh
 COPY backend/jobs.cron /etc/cron.d/fetch_ai_news_cron
+
+# Grant execution rights to the entrypoint script
 RUN chmod +x /app/entrypoint.sh
 
-# Apply the cron job
-RUN jobs.cron /etc/cron.d/jobs.cron
+# Apply cron jobs
+RUN chmod 0644 /etc/cron.d/fetch_ai_news_cron
+RUN crontab /etc/cron.d/fetch_ai_news_cron
 
+# Expose the application port
+EXPOSE 8000
+
+# Run the entrypoint script
 CMD ["/app/entrypoint.sh"]

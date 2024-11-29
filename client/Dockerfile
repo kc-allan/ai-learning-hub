@@ -2,9 +2,9 @@ FROM node:18
 
 WORKDIR /app
 
-COPY client/package.json client/package-lock.json ./
+COPY client/package.json ./
 
-RUN npm install
+RUN npm install @rollup/rollup-linux-x64-gnu && npm install
 
 COPY client/ .
 
