@@ -1,26 +1,30 @@
-version: "3.8"
+version: '3.8'
 
 services:
   backend:
-    build:
-      context: ./ # Use project root
-      dockerfile: backend/Dockerfile
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    environment:
-      DATABASE_URL: "postgresql://ai-db_owner:pDSKWljYuy39@ep-restless-sea-a5l3f205.us-east-2.aws.neon.tech/ai-db?sslmode=require"
-    depends_on:
-      - client
     volumes:
-      - ./backend:/app # Map only the backend directory
-    command: ["/app/entrypoint.sh"]
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
 
   client:
-    build:
-      context: ./ # Use project root
-      dockerfile: client/Dockerfile
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
     ports:
-      - "5173:5173"
+      - "3000:3000"
     volumes:
       - ./client:/app
-    command: ["npm", "run", "dev", "--", "--host"]
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped

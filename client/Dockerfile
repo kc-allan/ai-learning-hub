@@ -1,13 +1,13 @@
-FROM node:18
+FROM node:18-alpine
 
 WORKDIR /app
 
-COPY client/package.json ./
+COPY package.json .
 
-RUN npm install @rollup/rollup-linux-x64-gnu && npm install
+RUN npm install
 
-COPY client/ .
+COPY . .
 
-EXPOSE 5173
+EXPOSE 3000
 
-CMD ["npm", "run", "dev", "--", "--host"]
+CMD [ "npm", "run", "dev" ]
