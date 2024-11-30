@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "ai-learning-hub-443018",
+  "private_key_id": "14a2ba8e7a4d34af71ffda52ca7364787586310c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDMX9et4NxEOPgQ\nq7rjWYEeKISFbAxCkSfH7NR+ihuMV3JbOo2HvCUKLFVWuBrViJ/2UEuJVqyycgP7\nW3ODP+fj7WyKPQo5EjNQWUJKrWsw5xGLd7GfRDiDgZG3+BJTA4plyxu85OTGk7B8\niZfi1K8JIZ3/BYQmua8Bdp5eUx8yK0mgcoAbLMdOjTfgKUIJWpAG5Rh8ASAjuVkD\nMN0hrUflHSlX1iDYaJoJjJDMSa7v4B33frzqZctV05JyGozYhUUSMKdbvmlPejjk\ntBq+NTYbDj64WQ8eknZ5w6Ip5bHj+302+waYdQe2jr6+eGeRe1FtX+ThsR9lhaO/\n4dgKfpoxAgMBAAECggEATTzrhgs1M5NULPi56LIq2fr2GnZ7K60wG56lsC0BvEhQ\nL6oxUtsIJJAcsGljus+npK8z3POk0MvGNXiabz/3o2xXWOc4tdjrC7KwGwjvOcwa\nFVtnBYoC0bBmIeDfDACKjW31Ta4zx9iJGoflnxRCEnFiBL9Q8lG6khMCRyOi5pJI\nhk3a0/W8+eabqkcCSt05NEJU2JBorVm/Ch5BgtBYGFRjBawQlDVjfy98UcuLVL6M\nvvCjgjxO08kTybUG7+il3lGXVwpTyfh7WduP0PxX9LlhmYnsuf/6p3n1U8Uyx4bB\nsYNio3clZALG+1xugZUiFix0tjYCOhGn8vMo5r9LAQKBgQDsJh9MgvqNwqgokeHU\nWx+50uybjF74drsp5LtIcB6kmvPpRvrnyLyH9GYB0IwolCSh+tOk5ssTf4HtKU4V\nO5me/MqhurC7SCsxQt93YeQY/kH1f4yoJJ0uivzEiDuWg6gfnZnPgKz3/Oz5NKJX\nPH345b83y1+2Nf3V5f71z/rnHwKBgQDdjfBLuHA7Cd+LfjXE0E1RD6JmKsiCUwEI\nYaEemuG1ZClMXW8rKrte7z+978CIAlPxwnvFdmBUci+AC9mGche+fK47c7k6DnVX\ne+Nr/ut7MxwYvKX4dy5JgmiincCHuwSNTpPxO+W8wdD0himkMo3YabW7SCZ921CM\nUK0Dsn3krwKBgHWdcx9HaQUr+1bheamrjPyfSgsa+b4kXIm8C29DsG9pYaxBFvxU\nZVoNZrTmqrgXOLuYUsshy+k1K3/0f5hhq9ycqUut0RImGqUZWnV6QwITuMRON78T\nJVomDUjRVWRcxGKiuxW3T+7fgSOJjIWIcnGB9CAU4eG9uGRNfhPt91gfAoGBAMGK\nFpnu+ot4aoGOtSXC2WewgqtBQHsoS0SpFHiJ0BYG81S0YkKRR7D8yu//Gm81qWMO\nA9VRPYFHZlsy/sjFrhxHCmUBCJPAwZy0qsxSmh67XRX25f2RDyxD8Wfs6p0nMCjI\ntdAMBPrJTOHuuT2os+STI6AAvS9AgLKyXxFVwUgdAoGAHyGdenOWxZEJ/8FffCe5\nSwyYuyJjrgRbLDDpCVikc4l5jQd6/8JaPK4zhSKZAmmCG+iIIylb+Y/vOoM1xLC+\ndnR1GNA0XXo2Okk3jNXs3KJfw0Nbgi7gFntrF/6f7/b5NfYRlTdkHBLDy4VfyNHq\nVVbunn7FVGxm9yRYMIo6JNc=\n-----END PRIVATE KEY-----\n",
+  "client_email": "ai-hub@ai-learning-hub-443018.iam.gserviceaccount.com",
+  "client_id": "103171560383114795894",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ai-hub%40ai-learning-hub-443018.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: gcr.io/ai-learning-hub-443018/backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        envFrom:
+        - secretRef:
+            name: backend-env
+        volumeMounts:
+        - name: static-files
+          mountPath: /app/static
+      volumes:
+      - name: static-files
+        emptyDir: {}
