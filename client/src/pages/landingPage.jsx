@@ -93,7 +93,7 @@ const LandingPage = () => {
         }
         const data = await response.json();
 
-        setPlans(data || []); // Assume the API returns `plans` array
+        setPlans(data || []);
       } catch (error) {
         console.error("Error fetching plans:", error);
       } finally {
