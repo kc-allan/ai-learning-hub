@@ -7,7 +7,7 @@ import {
   Newspaper,
   Send,
   MessageCircle,
-  Lock
+  Lock,
 } from "lucide-react";
 import {
   Card,
@@ -48,7 +48,7 @@ const ForumPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [mobileTab, setMobileTab] = useState(0);
-  const isPremium = useSelector((state) => state.user?.is_premium)
+  const isPremium = useSelector((state) => state.user?.is_premium);
 
   useEffect(() => {
     fetchForums();
@@ -61,9 +61,12 @@ const ForumPage = () => {
 
   const fetchForums = async () => {
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL + `/api/v1/community/forums/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + `/api/v1/community/forums/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (response.status === 401) {
         return dispatch(setLogout());
       }
@@ -77,8 +80,9 @@ const ForumPage = () => {
 
   const fetchThreads = async (forumId) => {
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL + 
-        `/api/v1/community/forums/${forumId}/threads/`,
+      const response = await fetch(
+        import.meta.env.VITE_API_URL +
+          `/api/v1/community/forums/${forumId}/threads/`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -89,8 +93,9 @@ const ForumPage = () => {
       // Fetch replies for each thread
       const threadsWithReplies = await Promise.all(
         data.map(async (thread) => {
-          const repliesResponse = await fetch(import.meta.env.VITE_API_URL + 
-            `/api/v1/community/forums/threads/${thread.id}/replies/`,
+          const repliesResponse = await fetch(
+            import.meta.env.VITE_API_URL +
+              `/api/v1/community/forums/threads/${thread.id}/replies/`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -109,9 +114,12 @@ const ForumPage = () => {
 
   const fetchNewsArticles = async () => {
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL + `/api/v1/community/news/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + `/api/v1/community/news/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (response.status === 401) return dispatch(setLogout());
       const data = await response.json();
       setNewsArticles(data);
@@ -123,8 +131,9 @@ const ForumPage = () => {
   const postReply = async (threadId) => {
     if (!newReplies[threadId]?.trim()) return;
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL + 
-        `/api/v1/community/forums/threads/${threadId}/replies/`,
+      const response = await fetch(
+        import.meta.env.VITE_API_URL +
+          `/api/v1/community/forums/threads/${threadId}/replies/`,
         {
           method: "POST",
           headers: {
@@ -139,8 +148,9 @@ const ForumPage = () => {
       if (!response.ok) throw new Error("Failed to post reply.");
 
       // Fetch updated replies after posting
-      const repliesResponse = await fetch(import.meta.env.VITE_API_URL + 
-        `/api/v1/community/forums/threads/${threadId}/replies/`,
+      const repliesResponse = await fetch(
+        import.meta.env.VITE_API_URL +
+          `/api/v1/community/forums/threads/${threadId}/replies/`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -164,11 +174,15 @@ const ForumPage = () => {
     }
   };
 
+  {
+    isCreatingThread && createThread();
+  }
   const createThread = async () => {
     if (!newThread.title.trim() || !newThread.content.trim()) return;
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL + 
-        `/api/v1/community/forums/${currentForum.id}/threads/`,
+      const response = await fetch(
+        import.meta.env.VITE_API_URL +
+          `/api/v1/community/forums/${currentForum.id}/threads/`,
         {
           method: "POST",
           headers: {
@@ -199,6 +213,61 @@ const ForumPage = () => {
     setMobileTab(newValue);
   };
 
+  const CreateThreadDialog = () => (
+    <Dialog
+      open={isCreatingThread}
+      onClose={() => setIsCreatingThread(false)}
+      maxWidth="md"
+      fullWidth
+    >
+      <DialogTitle>Create New Thread in {currentForum?.title}</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Thread Title"
+          fullWidth
+          variant="outlined"
+          value={newThread.title}
+          onChange={(e) =>
+            setNewThread((prev) => ({ ...prev, title: e.target.value }))
+          }
+          required
+          error={!newThread.title.trim()}
+          helperText={!newThread.title.trim() ? "Title is required" : ""}
+        />
+        <TextField
+          margin="dense"
+          label="Thread Content"
+          fullWidth
+          multiline
+          rows={4}
+          variant="outlined"
+          value={newThread.content}
+          onChange={(e) =>
+            setNewThread((prev) => ({ ...prev, content: e.target.value }))
+          }
+          required
+          error={!newThread.content.trim()}
+          helperText={!newThread.content.trim() ? "Content is required" : ""}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setIsCreatingThread(false)} color="secondary">
+          Cancel
+        </Button>
+        <Button
+          onClick={createThread}
+          color="primary"
+          variant="contained"
+          disabled={!newThread.title.trim() || !newThread.content.trim()}
+        >
+          Create Thread
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -208,7 +277,7 @@ const ForumPage = () => {
             {error}
           </Alert>
         )}
-  
+
         <Box
           sx={{
             display: { xs: "block", lg: "none" },
@@ -226,9 +295,15 @@ const ForumPage = () => {
             <Tab icon={<Newspaper />} label="News" />
           </Tabs>
         </Box>
-  
+
+        {isPremium && isCreatingThread && <CreateThreadDialog />}
+
         <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
-          <div className={`space-y-4 lg:col-span-1 overflow-y-auto max-h-screen ${mobileTab === 0 || "hidden lg:block"}`}>
+          <div
+            className={`space-y-4 lg:col-span-1 overflow-y-auto max-h-screen ${
+              mobileTab === 0 || "hidden lg:block"
+            }`}
+          >
             <Card className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <Typography variant="h6">Forums</Typography>
@@ -241,22 +316,29 @@ const ForumPage = () => {
                   <Button
                     key={forum.id}
                     fullWidth
-                    variant={forum.id === currentForum?.id ? "contained" : "default"}
+                    variant={
+                      forum.id === currentForum?.id ? "contained" : "default"
+                    }
                     onClick={() => setCurrentForum(forum)}
                   >
-                    {/* <MessageSquare className="mr-2 h-5 w-5" /> */}
                     {forum.title}
                   </Button>
                 ))}
               </div>
             </Card>
           </div>
-  
-          <div className={`lg:col-span-3 space-y-4 lg:overflow-y-auto lg:h-screen ${mobileTab === 0 || "hidden lg:block"}`}>
+
+          <div
+            className={`lg:col-span-3 space-y-4 lg:overflow-y-auto lg:h-screen ${
+              mobileTab === 0 || "hidden lg:block"
+            }`}
+          >
             {currentForum && (
               <Card className="p-4">
                 <div className="flex justify-between items-center mb-4">
-                  <Typography variant="h5">{currentForum.title} Threads</Typography>
+                  <Typography variant="h5">
+                    {currentForum.title} Threads
+                  </Typography>
                   {isPremium ? (
                     <Button
                       variant="default"
@@ -270,7 +352,7 @@ const ForumPage = () => {
                     <div className="flex items-center space-x-2 bg-yellow-50 border border-yellow-200 rounded-md p-2">
                       <Lock className="h-5 w-5 text-yellow-600" />
                       <Typography className="text-sm text-yellow-700">
-                        Upgrade to  Premium to Create Threads
+                        Upgrade to Premium to Create Threads
                       </Typography>
                     </div>
                   )}
@@ -278,21 +360,38 @@ const ForumPage = () => {
                 <div className="space-y-4">
                   {threads.length === 0 ? (
                     <Typography className="text-center text-gray-500 italic">
-                      No threads yet. {isPremium ? "Be the first to post!" : "Premium users can start a thread."}
+                      No threads yet.{" "}
+                      {isPremium
+                        ? "Be the first to post!"
+                        : "Premium users can start a thread."}
                     </Typography>
                   ) : (
                     threads.map((thread) => (
-                      <Card key={thread.id} className="p-4 hover:shadow-md space-y-4">
+                      <Card
+                        key={thread.id}
+                        className="p-4 hover:shadow-md space-y-4"
+                      >
                         <div className="bg-gray-100 p-2 pb-4 rounded-sm">
-                          <Typography variant="subtitle1" className="flex items-center gap-2">
-                            <h1 className="font-bold text-black">{thread.title}</h1>
-                            <span className="text-xs text-gray-500">{timeElapsed(thread.created_at)}</span>
+                          <Typography
+                            variant="subtitle1"
+                            className="flex items-center gap-2"
+                          >
+                            <h1 className="font-bold text-black">
+                              {thread.title}
+                            </h1>
+                            <span className="text-xs text-gray-500">
+                              {timeElapsed(thread.created_at)}
+                            </span>
                           </Typography>
-                          <Typography variant="body2" className="text-gray-600" sx={{ marginTop: "8px" }}>
+                          <Typography
+                            variant="body2"
+                            className="text-gray-600"
+                            sx={{ marginTop: "8px" }}
+                          >
                             {thread.content}
                           </Typography>
                         </div>
-  
+
                         <div>
                           <Button
                             variant="text"
@@ -301,23 +400,40 @@ const ForumPage = () => {
                           >
                             {thread.replies?.length || 0} Replies
                           </Button>
-  
+
                           <Collapse in={expandedThreads[thread.id]}>
                             <div className="space-y-2 bg-gray-100 p-3 rounded-lg max-h-[500px] overflow-y-auto">
                               {thread.replies?.length === 0 ? (
-                                <Typography variant="body2" className="text-gray-500 text-center italic">
+                                <Typography
+                                  variant="body2"
+                                  className="text-gray-500 text-center italic"
+                                >
                                   No replies yet
                                 </Typography>
                               ) : (
                                 thread.replies?.map((reply) => (
-                                  <div key={reply.id} className="bg-white p-2 rounded-md shadow-sm">
-                                    <Typography variant="body2" className="text-gray-800">
-                                      <span className="font-bold">{reply.written_by}</span>
-                                      <span>{reply?.written_by === currentUser.username && "(You)"}</span>
+                                  <div
+                                    key={reply.id}
+                                    className="bg-white p-2 rounded-md shadow-sm"
+                                  >
+                                    <Typography
+                                      variant="body2"
+                                      className="text-gray-800"
+                                    >
+                                      <span className="font-bold">
+                                        {reply.written_by}
+                                      </span>
+                                      <span>
+                                        {reply?.written_by ===
+                                          currentUser.username && "(You)"}
+                                      </span>
                                       : {reply.content}
                                     </Typography>
                                     <span className="text-xs text-gray-500">
-                                      {format(new Date(reply.created_at), "dd MMM yyyy • HH:mm")}
+                                      {format(
+                                        new Date(reply.created_at),
+                                        "dd MMM yyyy • HH:mm"
+                                      )}
                                     </span>
                                   </div>
                                 ))
@@ -364,7 +480,7 @@ const ForumPage = () => {
               </Card>
             )}
           </div>
-  
+
           <div
             className={`
               lg:col-span-2 
@@ -414,7 +530,6 @@ const ForumPage = () => {
               </div>
             </Card>
           </div>
-
         </div>
       </main>
     </div>

@@ -5,7 +5,15 @@ import { useDispatch } from "react-redux";
 import { format } from "date-fns";
 import Header from "../../components/header";
 import { setLogout } from "../state";
-import { Home, BookOpen, Activity, Award, TrendingUp, Zap } from "lucide-react";
+import {
+  Home,
+  BookOpen,
+  Activity,
+  Award,
+  TrendingUp,
+  Zap,
+  Star,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const learningPaths = [
@@ -47,6 +55,7 @@ const Dashboard = () => {
   const [userProgress, setUserProgress] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const isPremium = useSelector((state) => state.user?.is_premium);
 
   function toTitleCase(str) {
     return str
@@ -58,11 +67,14 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUserProgress = async () => {
       try {
-        const response = await fetch(import.meta.env.VITE_API_URL + `/api/v1/user/progress`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          import.meta.env.VITE_API_URL + `/api/v1/user/progress`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         if (response.status === 401) {
           return dispatch(setLogout());
         }
@@ -92,16 +104,32 @@ const Dashboard = () => {
                 className="w-16 h-16 rounded-full mr-4"
               />
               <div>
-                <h2 className="text-xl font-bold">
-                  {user?.first_name || user?.last_name
-                    ? toTitleCase(`${user?.first_name} ${user?.last_name}`)
-                    : user?.username || "Learner"}
-                </h2>
+                <div className="flex items-center space-x-1">
+                  <h1 className="text-xl font-bold">
+                    {user?.first_name || user?.last_name
+                      ? toTitleCase(`${user?.first_name}`) +
+                        " " +
+                        toTitleCase(`${user?.last_name}`)
+                      : user?.username || "Learner"}
+                  </h1>
+                  <span>
+                    {isPremium && <Star fill="gold" stroke="none" size={16} />}
+                  </span>
+                </div>
                 <p className="text-gray-500">AI & Machine Learning Track</p>
               </div>
             </div>
 
             <div className="space-y-4">
+              {isPremium ? (
+                <span className="text-xs bg-amber-300 px-2 rounded-full font-bold">
+                  Premium
+                </span>
+              ) : (
+                <span className="text-xs bg-gray-300 px-2 rounded-full font-bold">
+                  Free Plan
+                </span>
+              )}
               <div className="flex justify-between">
                 <span>Profile Completion</span>
                 <span className="font-bold">85%</span>

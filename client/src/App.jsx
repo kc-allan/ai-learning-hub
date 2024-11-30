@@ -10,6 +10,8 @@ import CourseDetailPage from "./pages/CourseDetail";
 import ForumPage from "./pages/CommunityForum";
 
 import { NotFoundPage } from "./pages/Errors";
+import PaymentCancellationPage from "./pages/paymentCancelled";
+import PaymentSuccessPage from "./pages/paymentSuccess";
 
 function App() {
   const isAuth = useSelector((state) => state.token)
@@ -24,6 +26,8 @@ function App() {
           <Route path="/community" element={isAuth ? <ForumPage /> : <LoginPage /> } />
           <Route path="/courses" element={isAuth ? <HomePage /> : <LoginPage /> } />
           <Route path="/course/:courseId" element={isAuth ?  <CourseDetailPage /> : <LoginPage /> } />
+          <Route path="/checkout/success" element={isAuth ? <PaymentSuccessPage /> : <LoginPage /> } />
+          <Route path="/checkout/canceled" element={isAuth ? <PaymentCancellationPage /> : <LoginPage /> } />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
