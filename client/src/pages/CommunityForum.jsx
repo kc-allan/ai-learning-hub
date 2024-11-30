@@ -115,7 +115,6 @@ const ForumPage = () => {
       if (response.status === 401) return dispatch(setLogout());
       const data = await response.json();
       setNewsArticles(data);
-      console.log(newsArticles);
     } catch (err) {
       setError("Failed to load news articles.");
     }

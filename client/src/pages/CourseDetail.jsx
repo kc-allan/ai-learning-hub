@@ -40,11 +40,14 @@ const CourseDetailPage = () => {
   useEffect(() => {
     const fetchUserProgress = async () => {
       try {
-        const response = await fetch(import.meta.env.VITE_API_URL + `/api/v1/user/progress/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          import.meta.env.VITE_API_URL + `/api/v1/user/progress/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (response.status === 401) {
           dispatch(setLogout());
@@ -75,11 +78,14 @@ const CourseDetailPage = () => {
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        const courseResponse = await fetch(import.meta.env.VITE_API_URL + `/api/v1/course/${courseId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const courseResponse = await fetch(
+          import.meta.env.VITE_API_URL + `/api/v1/course/${courseId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (courseResponse.status === 401) {
           return dispatch(setLogout());
@@ -170,7 +176,9 @@ const CourseDetailPage = () => {
 
   const fetchQuiz = async (quizId) => {
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL + `/api/v1/quiz/${quizId}/questions`);
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + `/api/v1/quiz/${quizId}/questions`
+      );
       if (!response.ok) throw new Error("Failed to fetch quiz details");
       const data = await response.json();
       setQuizData(data);
@@ -192,15 +200,15 @@ const CourseDetailPage = () => {
 
   const renderQuizContent = () => {
     if (!quizData) return null;
-  
+
     // Helper function to render results
     const renderResults = () => {
       if (!results) {
         return <div>Loading your quiz results...</div>;
       }
-  
+
       const score = results.attempt?.total_score || 0;
-  
+
       return (
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="text-center mb-6">
@@ -218,23 +226,21 @@ const CourseDetailPage = () => {
               )}
             </div>
             <h3 className="text-2xl font-bold mb-2">Quiz Complete!</h3>
-            <p className="text-gray-600">Your score: {Number(score)} / {quizData?.length} - <span className="font-bold" >{Number(score) / quizData?.length * 100}%</span> </p>
+            <p className="text-gray-600">
+              Your score: {Number(score)} / {quizData?.length} -{" "}
+              <span className="font-bold">
+                {(Number(score) / quizData?.length) * 100}%
+              </span>{" "}
+            </p>
           </div>
-  
+
           {/* Questions and Answers */}
           <div className="space-y-6">
             {quizData.map((question, index) => {
-              // console.log(selectedAnswers);
-              // console.log(question.id);
-              // console.log(results);
-              
-              const isCorrect =
-                results.attempt.responses.find(
-                  (res) => res.question_id === question.id
-                )?.is_correct;
-                console.log(question.question_options);
-                
-  
+              const isCorrect = results.attempt.responses.find(
+                (res) => res.question_id === question.id
+              )?.is_correct;
+
               return (
                 <div
                   key={question.id}
@@ -274,7 +280,7 @@ const CourseDetailPage = () => {
               );
             })}
           </div>
-  
+
           {/* Retry and Close Buttons */}
           <div className="mt-6 flex justify-end space-x-3">
             <button
@@ -302,42 +308,47 @@ const CourseDetailPage = () => {
         </div>
       );
     };
-  
+
     // Handle quiz submission
     const handleQuizSubmit = async () => {
       if (quizSubmitted) return; // Avoid multiple submissions
-  
+
       setQuizSubmitted(true);
-  
+
       try {
-        const response = await fetch(import.meta.env.VITE_API_URL + `/api/v1/quiz/${activeQuizId}/submit/`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            answers: Object.entries(selectedAnswers).map(([questionId, answerId]) => ({
-              question_id: questionId,
-              selected_option_id: answerId,
-            })),
-          }),
-        });
-  
+        const response = await fetch(
+          import.meta.env.VITE_API_URL + `/api/v1/quiz/${activeQuizId}/submit/`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              answers: Object.entries(selectedAnswers).map(
+                ([questionId, answerId]) => ({
+                  question_id: questionId,
+                  selected_option_id: answerId,
+                })
+              ),
+            }),
+          }
+        );
+
         if (!response.ok) throw new Error("Failed to submit quiz");
-  
+
         const resultData = await response.json();
         setResults(resultData);
       } catch (error) {
         console.error("Error submitting quiz:", error);
       }
     };
-  
+
     // If results exist, render results
     if (results) return renderResults();
-  
+
     const currentQuestion = quizData[currentQuestionIndex];
-  
+
     // Render current question
     return (
       <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -346,10 +357,11 @@ const CourseDetailPage = () => {
             Question {currentQuestionIndex + 1} of {quizData.length}
           </h3>
           <div className="text-sm text-gray-600">
-            {Math.round((currentQuestionIndex / quizData.length) * 100)}% Complete
+            {Math.round((currentQuestionIndex / quizData.length) * 100)}%
+            Complete
           </div>
         </div>
-  
+
         <div className="mb-8">
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
@@ -360,7 +372,7 @@ const CourseDetailPage = () => {
             />
           </div>
         </div>
-  
+
         <div className="mb-6">
           <p className="text-lg font-medium mb-4">{currentQuestion.text}</p>
           <div className="space-y-3">
@@ -381,11 +393,12 @@ const CourseDetailPage = () => {
             ))}
           </div>
         </div>
-  
+
         <div className="flex justify-end space-x-3">
           <button
             onClick={() => {
-              if (currentQuestionIndex > 0) setCurrentQuestionIndex((prev) => prev - 1);
+              if (currentQuestionIndex > 0)
+                setCurrentQuestionIndex((prev) => prev - 1);
             }}
             disabled={currentQuestionIndex === 0}
             className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
@@ -411,7 +424,6 @@ const CourseDetailPage = () => {
       </div>
     );
   };
-  
 
   const renderModuleContent = () => {
     if (!selectedModule) return null;

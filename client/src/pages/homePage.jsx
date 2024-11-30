@@ -17,7 +17,6 @@ import { setLogout } from "../state";
 import PaymentPlanModal from "../../components/paymentPlanModal";
 
 const CourseCard = ({ course, onClick }) => {
-  // console.log(course)
   const getLevelIcon = (level) => {
     switch (level.toLowerCase()) {
       case "beginner":
@@ -212,7 +211,6 @@ const HomePage = () => {
         const data = await userProgressResponse.json();
         setUserProgress(data);
       } catch (error) {
-        console.log(error.message);
         setError(error.message);
       }
     };
@@ -224,7 +222,6 @@ const HomePage = () => {
       const response = await fetch(import.meta.env.VITE_API_URL + `/api/v1/course/${courseId}`);
       if (!response.ok) throw new Error("Failed to fetch course modules");
       const data = await response.json();
-      // console.log(data.modules);
 
       setCourseModules(data.modules);
     } catch (err) {

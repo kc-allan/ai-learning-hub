@@ -81,9 +81,10 @@ const LandingPage = () => {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const response = await fetch(import.meta.env.VITE_API_URL + "/api/v1/payment/plans");
-        console.log(import.meta.env.VITE_API_URL + "/api/v1/payment/plans");
-        
+        const response = await fetch(
+          import.meta.env.VITE_API_URL + "/api/v1/payment/plans"
+        );
+
         if (response.status === 401) {
           return disptach(setLogout());
         }
@@ -91,7 +92,6 @@ const LandingPage = () => {
           throw new Error("Failed to fetch plans");
         }
         const data = await response.json();
-        console.log(data);
 
         setPlans(data || []); // Assume the API returns `plans` array
       } catch (error) {
