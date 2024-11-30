@@ -40,7 +40,7 @@ const CourseDetailPage = () => {
   useEffect(() => {
     const fetchUserProgress = async () => {
       try {
-        const response = await fetch(`/api/v1/user/progress/`, {
+        const response = await fetch(process.env.API_URL + `/api/v1/user/progress/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -75,7 +75,7 @@ const CourseDetailPage = () => {
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        const courseResponse = await fetch(`/api/v1/course/${courseId}`, {
+        const courseResponse = await fetch(process.env.API_URL + `/api/v1/course/${courseId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -170,7 +170,7 @@ const CourseDetailPage = () => {
 
   const fetchQuiz = async (quizId) => {
     try {
-      const response = await fetch(`/api/v1/quiz/${quizId}/questions`);
+      const response = await fetch(process.env.API_URL + `/api/v1/quiz/${quizId}/questions`);
       if (!response.ok) throw new Error("Failed to fetch quiz details");
       const data = await response.json();
       setQuizData(data);
@@ -310,7 +310,7 @@ const CourseDetailPage = () => {
       setQuizSubmitted(true);
   
       try {
-        const response = await fetch(`/api/v1/quiz/${activeQuizId}/submit/`, {
+        const response = await fetch(process.env.API_URL + `/api/v1/quiz/${activeQuizId}/submit/`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,

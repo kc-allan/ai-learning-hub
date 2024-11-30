@@ -58,7 +58,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUserProgress = async () => {
       try {
-        const response = await fetch(`/api/v1/user/progress`, {
+        const response = await fetch(process.env.API_URL + `/api/v1/user/progress`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

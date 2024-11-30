@@ -61,7 +61,7 @@ const ForumPage = () => {
 
   const fetchForums = async () => {
     try {
-      const response = await fetch(`/api/v1/community/forums/`, {
+      const response = await fetch(process.env.API_URL + `/api/v1/community/forums/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.status === 401) {
@@ -77,7 +77,7 @@ const ForumPage = () => {
 
   const fetchThreads = async (forumId) => {
     try {
-      const response = await fetch(
+      const response = await fetch(process.env.API_URL + 
         `/api/v1/community/forums/${forumId}/threads/`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -89,7 +89,7 @@ const ForumPage = () => {
       // Fetch replies for each thread
       const threadsWithReplies = await Promise.all(
         data.map(async (thread) => {
-          const repliesResponse = await fetch(
+          const repliesResponse = await fetch(process.env.API_URL + 
             `/api/v1/community/forums/threads/${thread.id}/replies/`,
             {
               headers: { Authorization: `Bearer ${token}` },
@@ -109,7 +109,7 @@ const ForumPage = () => {
 
   const fetchNewsArticles = async () => {
     try {
-      const response = await fetch(`/api/v1/community/news/`, {
+      const response = await fetch(process.env.API_URL + `/api/v1/community/news/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.status === 401) return dispatch(setLogout());
@@ -124,7 +124,7 @@ const ForumPage = () => {
   const postReply = async (threadId) => {
     if (!newReplies[threadId]?.trim()) return;
     try {
-      const response = await fetch(
+      const response = await fetch(process.env.API_URL + 
         `/api/v1/community/forums/threads/${threadId}/replies/`,
         {
           method: "POST",
@@ -140,7 +140,7 @@ const ForumPage = () => {
       if (!response.ok) throw new Error("Failed to post reply.");
 
       // Fetch updated replies after posting
-      const repliesResponse = await fetch(
+      const repliesResponse = await fetch(process.env.API_URL + 
         `/api/v1/community/forums/threads/${threadId}/replies/`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -168,7 +168,7 @@ const ForumPage = () => {
   const createThread = async () => {
     if (!newThread.title.trim() || !newThread.content.trim()) return;
     try {
-      const response = await fetch(
+      const response = await fetch(process.env.API_URL + 
         `/api/v1/community/forums/${currentForum.id}/threads/`,
         {
           method: "POST",

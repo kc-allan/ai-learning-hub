@@ -180,7 +180,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await fetch("/api/v1/courses");
+        const response = await fetch(process.env.API_URL + "/api/v1/courses");
         if (!response.ok) throw new Error("Failed to fetch courses");
         const data = await response.json();
         setCourses(data);
@@ -197,7 +197,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchUserProgress = async () => {
       try {
-        const userProgressResponse = await fetch("/api/v1/user/progress", {
+        const userProgressResponse = await fetch(process.env.API_URL + "/api/v1/user/progress", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -221,7 +221,7 @@ const HomePage = () => {
 
   const fetchCourseModules = async (courseId) => {
     try {
-      const response = await fetch(`/api/v1/course/${courseId}`);
+      const response = await fetch(process.env.API_URL + `/api/v1/course/${courseId}`);
       if (!response.ok) throw new Error("Failed to fetch course modules");
       const data = await response.json();
       // console.log(data.modules);
