@@ -43,6 +43,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # whitenoise
+     "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     # cors
     "corsheaders.middleware.CorsMiddleware",
@@ -134,7 +136,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'  # This is the base URL for media files
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # The directory where media files will be stored
 
-
+STORAGES = {
+    # ...
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 

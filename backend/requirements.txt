@@ -14,4 +14,4 @@ requests
 gunicorn
 stripe
 youtube-transcript-api
-gunicorn
+whitenoise
