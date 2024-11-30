@@ -81,7 +81,9 @@ const LandingPage = () => {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const response = await fetch(process.env.API_URL + "/api/v1/payment/plans");
+        const response = await fetch(import.meta.env.VITE_API_URL + "/api/v1/payment/plans");
+        console.log(import.meta.env.VITE_API_URL + "/api/v1/payment/plans");
+        
         if (response.status === 401) {
           return disptach(setLogout());
         }

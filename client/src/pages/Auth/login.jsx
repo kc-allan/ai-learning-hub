@@ -28,7 +28,7 @@ const LoginPage = () => {
 
   const fetchUserData = async (token) => {
     try {
-      const response = await fetch(process.env.API_URL + "/api/v1/user", {
+      const response = await fetch(import.meta.env.VITE_API_URL + "/api/v1/user", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -52,7 +52,7 @@ const LoginPage = () => {
     setError(null);
 
     try {
-      const response = await fetch(process.env.API_URL + "/api/v1/auth/login", {
+      const response = await fetch(import.meta.env.VITE_API_URL + "/api/v1/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

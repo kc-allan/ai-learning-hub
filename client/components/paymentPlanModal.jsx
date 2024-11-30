@@ -37,7 +37,7 @@ const PaymentPlanModal = ({ text }) => {
         setIsLoading(true);
         setError(null);
         try {
-          const response = await fetch(process.env.API_URL + "/api/v1/payment/plans/", {
+          const response = await fetch(import.meta.env.VITE_API_URL + "/api/v1/payment/plans/", {
             Authorization: `Bearer ${token}`,
           });
 
@@ -74,7 +74,7 @@ const PaymentPlanModal = ({ text }) => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(process.env.API_URL + process.env.API_URL + "/api/v1/payment/checkout/", {
+        const response = await fetch(import.meta.env.VITE_API_URL + import.meta.env.VITE_API_URL + "/api/v1/payment/checkout/", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
