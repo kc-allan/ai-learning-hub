@@ -74,7 +74,7 @@ const PaymentPlanModal = ({ text }) => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(import.meta.env.VITE_API_URL + import.meta.env.VITE_API_URL + "/api/v1/payment/checkout/", {
+        const response = await fetch(import.meta.env.VITE_API_URL + "/api/v1/payment/checkout/", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -82,7 +82,7 @@ const PaymentPlanModal = ({ text }) => {
           },
           body: JSON.stringify({ plan_id: selectedPlan.id }),
         });
-
+        
         if (response.status === 401) {
           dispatch(setLogout());
           return;
