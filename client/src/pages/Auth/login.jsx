@@ -36,13 +36,15 @@ const LoginPage = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch user data.");
+        const errorData = await response.json()
+        throw new Error(errorData.details);
       }
 
       const userData = await response.json();
-      dispatch(setCurrentUser({user: userData})); // Update Redux state with user data
+      dispatch(setCurrentUser({user: userData}));
     } catch (err) {
-      console.error("Error fetching user data:", err.message);
+      // console.error("Error fetching user data:", err.message);
+      setError(err.message)
     }
   };
 
@@ -62,7 +64,7 @@ const LoginPage = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to login");
+        throw new Error(errorData.detail);
       }
 
       const data = await response.json();

@@ -77,7 +77,7 @@ const PaymentPlanModal = ({ text }) => {
         const response = await fetch(import.meta.env.VITE_API_URL + "/api/v1/payment/checkout/", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            'Authorization': `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ plan_id: selectedPlan.id }),
@@ -90,14 +90,14 @@ const PaymentPlanModal = ({ text }) => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Payment checkout failed");
+          throw new Error(errorData.error);
         }
 
         const paymentLink = await response.json();
-        window.location.href = paymentLink.url; // Use window.location instead of navigate
+        window.location.href = paymentLink.url;
       } catch (err) {
-        console.error("Checkout error:", err);
-        setError(err.message || "An unexpected error occurred during checkout");
+        console.error("Checkout error:", err.message);
+        setError(err.message);
       } finally {
         setIsLoading(false);
       }
