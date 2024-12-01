@@ -19,38 +19,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const learningPaths = [
-  {
-    id: 1,
-    title: "Machine Learning Fundamentals",
-    progress: 65,
-    modules: 4,
-    icon: <Zap className="text-blue-500" />,
-  },
-  {
-    id: 2,
-    title: "Deep Learning Specialization",
-    progress: 35,
-    modules: 6,
-    icon: <TrendingUp className="text-green-500" />,
-  },
-];
-
-const recentCourses = [
-  {
-    id: 1,
-    title: "Python for Data Science",
-    progress: 75,
-    lastAccessed: "2 hours ago",
-  },
-  {
-    id: 2,
-    title: "Neural Networks Basics",
-    progress: 45,
-    lastAccessed: "Yesterday",
-  },
-];
-
 const Dashboard = () => {
   const token = useSelector((state) => state.token);
   const user = useSelector((state) => state.user);
@@ -195,7 +163,7 @@ const Dashboard = () => {
                       <CreditCard className="mr-2 text-purple-500" />
                       Subscription Details
                     </h3>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-black bg-gray-300 rounded-full px-4 font-semibold">
                       {subscriptionDetails.plan}
                     </span>
                   </div>
