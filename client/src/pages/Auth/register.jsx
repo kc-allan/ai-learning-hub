@@ -34,7 +34,11 @@ const RegistrationPage = () => {
     switch (field) {
       case "first_name":
       case "last_name":
-        if (value.trim().length < 3) error = "Must be at least 3 characters.";
+        if (value.trim().length < 3) {
+          error = "Must be at least 3 characters.";
+        } else if (!/^[a-zA-Z]+$/.test(value.trim())) {
+          error = "Only letters are allowed.";
+        }
         break;
       case "username":
         if (value.trim().length < 4) error = "Must be at least 4 characters.";
