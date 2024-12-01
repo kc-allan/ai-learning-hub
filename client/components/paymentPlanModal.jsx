@@ -134,6 +134,9 @@ const PaymentPlanModal = ({ text }) => {
         onClose={() => setIsOpen(false)}
         maxWidth="lg"
         fullWidth
+        sx={{
+          zIndex: 9999999
+        }}
       >
         <DialogTitle>Select Your Payment Plan</DialogTitle>
 
