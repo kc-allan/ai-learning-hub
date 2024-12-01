@@ -91,7 +91,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-[9999] flex justify-between w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container px-4 flex h-16 items-center justify-between">
+      <div className="px-4 w-full flex h-16 items-center justify-between">
         {/* Logo */}
         <NavLink 
           to="/" 
