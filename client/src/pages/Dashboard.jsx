@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { format, differenceInDays } from "date-fns";
 import Header from "../../components/header";
-import { setLogout } from "../state";
+import { setLogout, setCurrentUser } from "../state";
 import {
   Home,
   BookOpen,
@@ -54,11 +54,11 @@ const recentCourses = [
 const Dashboard = () => {
   const token = useSelector((state) => state.token);
   const user = useSelector((state) => state.user);
-  const [activeTab, setActiveTab] = useState("overview");
   const [userProgress, setUserProgress] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isPremium = useSelector((state) => state.user?.is_premium);
+  const [error, setError] = useState(null)
 
   function toTitleCase(str) {
     return str
@@ -66,6 +66,33 @@ const Dashboard = () => {
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
   }
+  useEffect(() => {
+    const fetchUserData = async () => {      
+      try {
+        const response = await fetch(
+          import.meta.env.VITE_API_URL + "/api/v1/user",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.details);
+        }
+
+        const userData = await response.json();        
+        dispatch(setCurrentUser({ user: userData }));
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     const fetchUserProgress = async () => {
@@ -149,18 +176,17 @@ const Dashboard = () => {
                   </span>
                 </div>
                 {isPremium ? (
-                <span className="text-xs bg-amber-300 px-2 rounded-full font-bold">
-                  Premium
-                </span>
-              ) : (
-                <span className="text-xs bg-gray-300 px-2 rounded-full font-bold">
-                  Free Plan
-                </span>
-              )}
+                  <span className="text-xs bg-amber-300 px-2 rounded-full font-bold">
+                    Premium
+                  </span>
+                ) : (
+                  <span className="text-xs bg-gray-300 px-2 rounded-full font-bold">
+                    Free Plan
+                  </span>
+                )}
               </div>
             </div>
 
-            
             {isPremium && (
               <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-3 bg-white rounded-lg shadow-md p-6">

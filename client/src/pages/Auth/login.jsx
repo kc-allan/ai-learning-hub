@@ -43,7 +43,6 @@ const LoginPage = () => {
       const userData = await response.json();
       dispatch(setCurrentUser({user: userData}));
     } catch (err) {
-      // console.error("Error fetching user data:", err.message);
       setError(err.message)
     }
   };
