@@ -15,7 +15,7 @@ import {
   Star,
   Calendar,
   CreditCard,
-  Layers
+  Layers,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -94,21 +94,29 @@ const Dashboard = () => {
 
   const subscriptionDetails = {
     plan: user.current_plan?.name || "Error fetching Plan",
-    startDate: new Date(user?.current_plan?.subscription_start) || "Error fetching start date",
+    startDate:
+      new Date(user?.current_plan?.subscription_start) ||
+      "Error fetching start date",
     endDate: new Date(user?.subscription_end) || "Error fetching end date",
-    price: user?.current_plan.price || "Error fetching Price"
+    price: user?.current_plan?.price || "Error fetching Price",
   };
 
   const calculateSubscriptionDetails = () => {
-    const daysRemaining = differenceInDays(subscriptionDetails.endDate, new Date());
-    const totalSubscriptionDays = differenceInDays(subscriptionDetails.endDate, subscriptionDetails.startDate);
+    const daysRemaining = differenceInDays(
+      subscriptionDetails.endDate,
+      new Date()
+    );
+    const totalSubscriptionDays = differenceInDays(
+      subscriptionDetails.endDate,
+      subscriptionDetails.startDate
+    );
     const progressPercentage = Math.round(
       ((totalSubscriptionDays - daysRemaining) / totalSubscriptionDays) * 100
     );
 
     return {
       daysRemaining,
-      progressPercentage
+      progressPercentage,
     };
   };
   const subscriptionInfo = calculateSubscriptionDetails();
@@ -140,12 +148,7 @@ const Dashboard = () => {
                     {isPremium && <Star fill="gold" stroke="none" size={16} />}
                   </span>
                 </div>
-                <p className="text-gray-500">AI & Machine Learning Track</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {isPremium ? (
+                {isPremium ? (
                 <span className="text-xs bg-amber-300 px-2 rounded-full font-bold">
                   Premium
                 </span>
@@ -154,12 +157,13 @@ const Dashboard = () => {
                   Free Plan
                 </span>
               )}
-              
-              
+              </div>
             </div>
+
+            
             {isPremium && (
               <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+                <div className="lg:col-span-3 bg-white rounded-lg shadow-md p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-bold flex items-center">
                       <CreditCard className="mr-2 text-purple-500" />
@@ -170,7 +174,7 @@ const Dashboard = () => {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-blue-50 p-4 rounded-lg">
                       <div className="flex items-center mb-2">
                         <Calendar className="mr-2 text-blue-500" />
@@ -191,7 +195,7 @@ const Dashboard = () => {
                       </p>
                     </div>
 
-                    <div className="bg-purple-50 p-4 rounded-lg">
+                    <div className="bg-purple-50 p-4 col-span-3 rounded-lg">
                       <div className="flex items-center mb-2">
                         <Star className="mr-2 text-purple-500" />
                         <span className="font-semibold">
