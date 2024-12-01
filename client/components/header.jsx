@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Layout, Menu, X } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Layout, X, Menu } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setLogout } from "../src/state";
 import PaymentPlanModal from "./paymentPlanModal";
@@ -24,70 +24,86 @@ const Header = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Active link styles
+  const getLinkClass = (isActive) => {
+    return isActive 
+      ? "block px-4 py-2 text-blue-600 font-semibold bg-blue-50 rounded-lg hover:text-blue-700 md:inline-block" 
+      : "block px-4 py-2 text-gray-600 hover:text-gray-900 md:inline-block";
+  };
+
   const NavLinks = () => (
     <>
       {isAuth ? (
         <>
           {!isPremium && <PaymentPlanModal />}
-          <Link
+          <NavLink
             to="/dashboard"
-            className="block px-4 py-2 text-gray-600 hover:text-gray-900 md:inline-block"
+            className={({ isActive }) => getLinkClass(isActive)}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Dashboard
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/community"
-            className="block px-4 py-2 text-gray-600 hover:text-gray-900 md:inline-block"
+            className={({ isActive }) => getLinkClass(isActive)}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Community
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/courses"
-            className="block px-4 py-2 text-gray-600 hover:text-gray-900 md:inline-block"
+            className={({ isActive }) => getLinkClass(isActive)}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Courses
-          </Link>
+          </NavLink>
           <button
             onClick={handleLogout}
-            className="block w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-red-600 md:inline-block md:w-auto"
+            className="block w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 md:inline-block md:w-auto"
           >
             Log Out
           </button>
         </>
       ) : (
         <>
-          <Link
+          <NavLink
             to="/auth/login"
-            className="block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 md:inline-block"
+            className={({ isActive }) => 
+              isActive 
+              ? "block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 md:inline-block" 
+              : "block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 md:inline-block"
+            }
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Login
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/auth/register"
-            className="block px-4 py-2 text-gray-600 hover:text-gray-900 md:inline-block"
+            className={({ isActive }) => getLinkClass(isActive)}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Sign Up
-          </Link>
+          </NavLink>
         </>
       )}
     </>
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-[9999] w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="cursor-pointer flex items-center gap-2">
+        <NavLink 
+          to="/" 
+          className={({ isActive }) => 
+            `cursor-pointer flex items-center gap-2 ${isActive ? 'opacity-70' : ''}`
+          }
+        >
           <Layout className="h-8 w-8 text-blue-500" />
           <span className="text-xl font-bold text-blue-500">
             AI Learning Hub
           </span>
-        </Link>
+        </NavLink>
 
         {isNonMobileScreens ? (
           <>
@@ -99,7 +115,7 @@ const Header = () => {
         ) : (
           <>
             {/* Mobile Menu Toggle */}
-            <button className="md:hidden z-60" onClick={toggleMobileMenu}>
+            <button className="md:hidden z-[9999]" onClick={toggleMobileMenu}>
               {isMobileMenuOpen ? (
                 <X className="h-6 w-6 text-gray-800" />
               ) : (
@@ -109,13 +125,13 @@ const Header = () => {
 
             {/* Mobile Navigation Overlay */}
             {isMobileMenuOpen && (
-              <div className="md:hidden space-y-6 fixed inset-0 bg-white top-16 left-0 right-0 bottom-0 z-50 flex flex-col gap-4 p-4 overflow-y-auto">
-                <div className="absolute top-4 right-4 z-60 flex items-center justify-center">
+              <div style={{zIndex: 9999}} className="md:hidden fixed inset-0 bg-white top-0 left-0 right-0 bottom-0 flex flex-col gap-4 p-4 overflow-y-auto">
+                <div style={{zIndex: 9999}} className="absolute top-4 right-4 flex items-center justify-center">
                   <button onClick={toggleMobileMenu} className="text-gray-800">
                     <X className="h-6 w-6" />
                   </button>
                 </div>
-                <div className="p-4 text-center space-y-2 bg-white z-70">
+                <div className="pt-20 p-4 text-center space-y-2 bg-white z-[9999]">
                   <NavLinks />
                 </div>
               </div>

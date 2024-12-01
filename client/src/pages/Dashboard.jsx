@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import Header from "../../components/header";
 import { setLogout } from "../state";
 import {
@@ -13,6 +13,9 @@ import {
   TrendingUp,
   Zap,
   Star,
+  Calendar,
+  CreditCard,
+  Layers
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -89,8 +92,29 @@ const Dashboard = () => {
     fetchUserProgress();
   }, []);
 
+  const subscriptionDetails = {
+    plan: user.current_plan?.name || "Error fetching Plan",
+    startDate: new Date(user?.current_plan?.subscription_start) || "Error fetching start date",
+    endDate: new Date(user?.subscription_end) || "Error fetching end date",
+    price: user?.current_plan.price || "Error fetching Price"
+  };
+
+  const calculateSubscriptionDetails = () => {
+    const daysRemaining = differenceInDays(subscriptionDetails.endDate, new Date());
+    const totalSubscriptionDays = differenceInDays(subscriptionDetails.endDate, subscriptionDetails.startDate);
+    const progressPercentage = Math.round(
+      ((totalSubscriptionDays - daysRemaining) / totalSubscriptionDays) * 100
+    );
+
+    return {
+      daysRemaining,
+      progressPercentage
+    };
+  };
+  const subscriptionInfo = calculateSubscriptionDetails();
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="container mx-auto max-w-7xl">
         {/* Top Section: Profile and Enrolled Courses */}
@@ -130,18 +154,75 @@ const Dashboard = () => {
                   Free Plan
                 </span>
               )}
-              <div className="flex justify-between">
-                <span>Profile Completion</span>
-                <span className="font-bold">85%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div
-                  className="bg-blue-600 h-2.5 rounded-full"
-                  style={{ width: "85%" }}
-                ></div>
-              </div>
+              
+              
             </div>
+            {isPremium && (
+              <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-bold flex items-center">
+                      <CreditCard className="mr-2 text-purple-500" />
+                      Subscription Details
+                    </h3>
+                    <span className="text-sm text-gray-500">
+                      {subscriptionDetails.plan}
+                    </span>
+                  </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <Calendar className="mr-2 text-blue-500" />
+                        <span className="font-semibold">Start Date</span>
+                      </div>
+                      <p className="text-lg">
+                        {format(subscriptionDetails.startDate, "dd MMM yyyy")}
+                      </p>
+                    </div>
+
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <Layers className="mr-2 text-green-500" />
+                        <span className="font-semibold">End Date</span>
+                      </div>
+                      <p className="text-lg">
+                        {format(subscriptionDetails.endDate, "dd MMM yyyy")}
+                      </p>
+                    </div>
+
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <Star className="mr-2 text-purple-500" />
+                        <span className="font-semibold">
+                          Subscription Price
+                        </span>
+                      </div>
+                      <p className="text-lg">
+                        ${subscriptionDetails.price}/month
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span>Subscription Progress</span>
+                      <span className="font-bold">
+                        {subscriptionInfo.daysRemaining} days remaining
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="bg-purple-600 h-2.5 rounded-full"
+                        style={{
+                          width: `${subscriptionInfo.progressPercentage}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="mt-6 grid grid-cols-3 gap-4 text-center">
               <div>
                 <Award className="mx-auto text-yellow-500 w-6 h-6" />
@@ -307,13 +388,6 @@ const Dashboard = () => {
               >
                 <Home className="mr-3 text-green-500" />
                 Community Forum
-              </Link>
-              <Link
-                to="/progress"
-                className="flex items-center bg-purple-50 p-3 rounded-lg hover:bg-purple-100 transition-colors"
-              >
-                <Activity className="mr-3 text-purple-500" />
-                Performance
               </Link>
             </div>
           </div>

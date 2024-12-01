@@ -8,6 +8,7 @@ import {
   Send,
   MessageCircle,
   Lock,
+  ArrowUpDown
 } from "lucide-react";
 import {
   Card,
@@ -23,11 +24,12 @@ import {
   Tabs,
   Tab,
   Box,
+  Select,
+  MenuItem
 } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/header";
-import PaymentPlanModal from "../../components/paymentPlanModal";
 
 import { timeElapsed } from "../../utils";
 import { setLogout } from "../state";
@@ -46,9 +48,9 @@ const ForumPage = () => {
   const token = useSelector((state) => state.token);
   const currentUser = useSelector((state) => state.user);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const [mobileTab, setMobileTab] = useState(0);
   const isPremium = useSelector((state) => state.user?.is_premium);
+  const [threadSortOrder, setThreadSortOrder] = useState('newest');
 
   useEffect(() => {
     fetchForums();
@@ -58,6 +60,29 @@ const ForumPage = () => {
   useEffect(() => {
     if (currentForum) fetchThreads(currentForum.id);
   }, [currentForum]);
+
+  const sortThreads = (threads) => {
+    switch (threadSortOrder) {
+      case 'newest':
+        return [...threads].sort((a, b) => 
+          new Date(b.created_at) - new Date(a.created_at)
+        );
+      case 'oldest':
+        return [...threads].sort((a, b) => 
+          new Date(a.created_at) - new Date(b.created_at)
+        );
+      case 'most_replies':
+        return [...threads].sort((a, b) => 
+          (b.replies?.length || 0) - (a.replies?.length || 0)
+        );
+      case 'least_replies':
+        return [...threads].sort((a, b) => 
+          (a.replies?.length || 0) - (b.replies?.length || 0)
+        );
+      default:
+        return threads;
+    }
+  };
 
   const fetchForums = async () => {
     try {
@@ -174,11 +199,11 @@ const ForumPage = () => {
     }
   };
 
-  {
-    isCreatingThread && createThread();
-  }
   const createThread = async () => {
-    if (!newThread.title.trim() || !newThread.content.trim()) return;
+    if (!newThread.title.trim() || !newThread.content.trim()) {
+      setError("Please fill in both title and content.");
+      return;
+    }
     try {
       const response = await fetch(
         import.meta.env.VITE_API_URL +
@@ -194,8 +219,12 @@ const ForumPage = () => {
       );
       if (response.status === 401) return dispatch(setLogout());
       if (!response.ok) throw new Error("Failed to create thread.");
+
+      // Reset thread creation state
       setNewThread({ title: "", content: "" });
       setIsCreatingThread(false);
+
+      // Refresh threads for the current forum
       fetchThreads(currentForum.id);
     } catch (err) {
       setError("Failed to create thread.");
@@ -212,61 +241,6 @@ const ForumPage = () => {
   const handleMobileTabChange = (event, newValue) => {
     setMobileTab(newValue);
   };
-
-  const CreateThreadDialog = () => (
-    <Dialog
-      open={isCreatingThread}
-      onClose={() => setIsCreatingThread(false)}
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle>Create New Thread in {currentForum?.title}</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          label="Thread Title"
-          fullWidth
-          variant="outlined"
-          value={newThread.title}
-          onChange={(e) =>
-            setNewThread((prev) => ({ ...prev, title: e.target.value }))
-          }
-          required
-          error={!newThread.title.trim()}
-          helperText={!newThread.title.trim() ? "Title is required" : ""}
-        />
-        <TextField
-          margin="dense"
-          label="Thread Content"
-          fullWidth
-          multiline
-          rows={4}
-          variant="outlined"
-          value={newThread.content}
-          onChange={(e) =>
-            setNewThread((prev) => ({ ...prev, content: e.target.value }))
-          }
-          required
-          error={!newThread.content.trim()}
-          helperText={!newThread.content.trim() ? "Content is required" : ""}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setIsCreatingThread(false)} color="secondary">
-          Cancel
-        </Button>
-        <Button
-          onClick={createThread}
-          color="primary"
-          variant="contained"
-          disabled={!newThread.title.trim() || !newThread.content.trim()}
-        >
-          Create Thread
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -295,8 +269,6 @@ const ForumPage = () => {
             <Tab icon={<Newspaper />} label="News" />
           </Tabs>
         </Box>
-
-        {isPremium && isCreatingThread && <CreateThreadDialog />}
 
         <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
           <div
@@ -339,6 +311,19 @@ const ForumPage = () => {
                   <Typography variant="h5">
                     {currentForum.title} Threads
                   </Typography>
+                  <Select
+                      value={threadSortOrder}
+                      onChange={(e) => setThreadSortOrder(e.target.value)}
+                      startAdornment={<ArrowUpDown className="mr-2 w-5 h-5" />}
+                      size="small"
+                      variant="outlined"
+                      className="mr-2 min-w-[150px]"
+                    >
+                      <MenuItem value="newest">Newest First</MenuItem>
+                      <MenuItem value="oldest">Oldest First</MenuItem>
+                      <MenuItem value="most_replies">Most Replies</MenuItem>
+                      <MenuItem value="least_replies">Least Replies</MenuItem>
+                    </Select>
                   {isPremium ? (
                     <Button
                       variant="default"
@@ -357,6 +342,48 @@ const ForumPage = () => {
                     </div>
                   )}
                 </div>
+                <Dialog
+                  open={isCreatingThread}
+                  onClose={() => setIsCreatingThread(false)}
+                >
+                  <DialogTitle>Create New Thread</DialogTitle>
+                  <DialogContent>
+                    <TextField
+                      fullWidth
+                      label="Title"
+                      value={newThread.title}
+                      onChange={(e) =>
+                        setNewThread((prev) => ({
+                          ...prev,
+                          title: e.target.value,
+                        }))
+                      }
+                      margin="dense"
+                    />
+                    <TextField
+                      fullWidth
+                      label="Content"
+                      multiline
+                      rows={4}
+                      value={newThread.content}
+                      onChange={(e) =>
+                        setNewThread((prev) => ({
+                          ...prev,
+                          content: e.target.value,
+                        }))
+                      }
+                      margin="dense"
+                    />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={() => setIsCreatingThread(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={createThread} variant="contained">
+                      Create
+                    </Button>
+                  </DialogActions>
+                </Dialog>
                 <div className="space-y-4">
                   {threads.length === 0 ? (
                     <Typography className="text-center text-gray-500 italic">
@@ -366,7 +393,7 @@ const ForumPage = () => {
                         : "Premium users can start a thread."}
                     </Typography>
                   ) : (
-                    threads.map((thread) => (
+                    sortThreads(threads).map((thread) => (
                       <Card
                         key={thread.id}
                         className="p-4 hover:shadow-md space-y-4"
