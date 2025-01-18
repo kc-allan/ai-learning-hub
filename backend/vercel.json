@@ -1,0 +1,16 @@
+{
+	"version": 2,
+	"builds": [
+	  {
+		"src": "ai_hub/wsgi.py",
+		"use": "@vercel/python"
+	  }
+	],
+	"routes": [
+	  {
+		"src": "/(.*)",
+		"dest": "ai_hub/wsgi.py"
+	  }
+	]
+  }
+  

@@ -126,9 +126,9 @@ const Dashboard = () => {
           <div className="lg:col-span-1 bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center mb-6">
               <img
-                src="https://via.placeholder.com/150"
+                src="https://www.strasys.uk/wp-content/uploads/2022/02/Depositphotos_484354208_S.jpg"
                 alt="Profile"
-                className="w-16 h-16 rounded-full mr-4"
+                className="w-16 h-16 rounded-full mr-4 border border-gray-600"
               />
               <div>
                 <div className="flex items-center space-x-1">
