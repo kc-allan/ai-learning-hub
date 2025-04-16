@@ -32,12 +32,12 @@ RUN crontab /etc/cron.d/fetch_ai_news_cron
 
 COPY .env ./
 
-RUN python manage.py makemigrations
-RUN python manage.py migrate
-RUN python manage.py seed_courses
-RUN python manage.py create_admin
-RUN python manage.py add_forums
-RUN python manage.py collectstatic --noinput
+# RUN python manage.py makemigrations
+# RUN python manage.py migrate
+# RUN python manage.py seed_courses
+# RUN python manage.py create_admin
+# RUN python manage.py add_forums
+# RUN python manage.py collectstatic --noinput
 RUN service cron start
 
 # Expose the application port
