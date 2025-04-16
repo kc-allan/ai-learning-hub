@@ -30,7 +30,7 @@ RUN chmod +x /app/entrypoint.sh
 RUN chmod 0644 /etc/cron.d/fetch_ai_news_cron
 RUN crontab /etc/cron.d/fetch_ai_news_cron
 
-COPY .env ./
+# COPY .env ./
 
 # RUN python manage.py makemigrations
 # RUN python manage.py migrate
