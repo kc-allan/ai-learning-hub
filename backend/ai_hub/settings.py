@@ -73,7 +73,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ai_hub.wsgi.app'
+WSGI_APPLICATION = 'ai_hub.wsgi.application'
 
 
 # Database
