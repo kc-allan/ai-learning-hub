@@ -1,0 +1,24 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+	<rect width="64" height="64" rx="12" fill="#4B48F5"/>
+  
+	<!-- Book pages (open) -->
+	<path d="M18 18C18 16.8954 18.8954 16 20 16H30C31.1046 16 32 16.8954 32 18V46C32 47.1046 31.1046 48 30 48H20C18.8954 48 18 47.1046 18 46V18Z" fill="white"/>
+	<path d="M46 18C46 16.8954 45.1046 16 44 16H34C32.8954 16 32 16.8954 32 18V46C32 47.1046 32.8954 48 34 48H44C45.1046 48 46 47.1046 46 46V18Z" fill="white" opacity="0.9"/>
+  
+	<!-- Brain nodes -->
+	<circle cx="26" cy="24" r="2" fill="#4B48F5"/>
+	<circle cx="38" cy="24" r="2" fill="#4B48F5"/>
+	<circle cx="32" cy="30" r="2" fill="#4B48F5"/>
+	<circle cx="26" cy="36" r="2" fill="#4B48F5"/>
+	<circle cx="38" cy="36" r="2" fill="#4B48F5"/>
+  
+	<!-- Neural connections -->
+	<line x1="26" y1="24" x2="32" y2="30" stroke="#4B48F5" stroke-width="1.5" stroke-linecap="round"/>
+	<line x1="38" y1="24" x2="32" y2="30" stroke="#4B48F5" stroke-width="1.5" stroke-linecap="round"/>
+	<line x1="26" y1="36" x2="32" y2="30" stroke="#4B48F5" stroke-width="1.5" stroke-linecap="round"/>
+	<line x1="38" y1="36" x2="32" y2="30" stroke="#4B48F5" stroke-width="1.5" stroke-linecap="round"/>
+  
+	<!-- Central fold -->
+	<line x1="32" y1="16" x2="32" y2="48" stroke="#C8C8FC" stroke-width="0.8" stroke-dasharray="2 2"/>
+  </svg>
+  
